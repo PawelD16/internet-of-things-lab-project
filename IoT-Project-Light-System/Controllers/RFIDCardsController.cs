@@ -57,7 +57,7 @@ namespace IoT_Project_Light_System.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CreatedAt,Data,UserId")] RFIDCard rFIDCard)
+        public async Task<IActionResult> Create([Bind("Id,UserId")] RFIDCard rFIDCard)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace IoT_Project_Light_System.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,CreatedAt,Data,UserId")] RFIDCard rFIDCard)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,UserId")] RFIDCard rFIDCard)
         {
             if (id != rFIDCard.Id)
             {
