@@ -62,6 +62,7 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CardOwnerId")] RFIDCard rFIDCard)
         {
+            ModelState.Clear();
             if (ModelState.IsValid)
             {
                 _context.Add(rFIDCard);
@@ -113,6 +114,7 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("Id,CardOwnerId")] RFIDCard rFIDCard)
         {
+            ModelState.Clear();
             if (id != rFIDCard.Id)
             {
                 return NotFound();
