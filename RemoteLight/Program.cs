@@ -1,6 +1,16 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MQTTnet;
+using MQTTnet.Client;
+using RemoteLight;
 using RemoteLight.Data;
+
+MQTThandler MQTThandler = new MQTThandler();
+
+await MQTThandler.Connect();
+await MQTThandler.SendMessage(payload: "kocham jeœæ majonez ³y¿k¹");
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +23,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+
 
 var app = builder.Build();
 
