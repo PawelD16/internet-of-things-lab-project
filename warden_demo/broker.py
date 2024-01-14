@@ -68,6 +68,10 @@ def on_message_received(c, userdata, msg):
         handle_brightness_data(brightness)
 
 
+def encoder_decode():
+    pass
+
+
 def publish_encoder_1(e):
     if current_pub_key != "":
         message = str(1)
@@ -103,6 +107,12 @@ def choose_room():
     timeout_thread.start()
 
 
+def bind_controllers():
+    keyboard.on_press_key('e', publish_encoder_1)
+    keyboard.on_press_key('q', publish_encoder_0)
+    keyboard.on_press_key('x', discard_room)
+
+
 def setup_broker():
     client.connect(broker_address)
 
@@ -113,9 +123,7 @@ def setup_broker():
 
     choose_room()
 
-    keyboard.on_press_key('e', publish_encoder_1)
-    keyboard.on_press_key('q', publish_encoder_0)
-    keyboard.on_press_key('x', discard_room)
+    bind_controllers()
 
     client.loop_forever()
 
