@@ -3,6 +3,8 @@ from utilities import is_room_number_valid
 from encryption_utils import get_public_key, decode_message
 
 
+pixels = None
+
 broker_address = "test.mosquitto.org"
 
 room_number = 0
@@ -16,10 +18,13 @@ brightness_status_topic = "messages/brightness"
 
 
 def setup_diodes():
+    # pixels = neopixel.NeoPixel(board.D18, 8, brightness=brightness / 32, auto_write=False)
     pass
 
 
 def update_diodes():
+    # pixels.brightness = brightness / 32
+    # pixels.show()
     pass
 
 
@@ -78,5 +83,6 @@ def initialize_room():
 
 if __name__ == "__main__":
     initialize_room()
+    setup_diodes()
     connect_to_broker()
 

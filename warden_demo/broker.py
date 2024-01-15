@@ -1,9 +1,12 @@
 import paho.mqtt.client as mqtt
 import keyboard
 import threading
-import rsa
 from encryption_utils import decode_pub_key, encode_message
 from utilities import is_room_number_valid
+
+# from config import *
+
+# from buzzer import buzzer
 
 broker_address = "test.mosquitto.org"
 
@@ -17,15 +20,26 @@ encoder_topic = "messages/encoder"
 keys_requests_topic = "messages/key/requests"
 keys_answers_topic = "messages/key/answers"
 brightness_status_topic = "messages/brightness"
+server_command_topic = "server/command"
+server_result_topic = "server/result"
+
 
 current_pub_key = ""
 
 
+def send_command_to_server(command):
+    # example "rooms:uid" -> List<Room>
+    client.publish(server_command_topic, payload=str(command))
+
+
 def unauthorized_ui():
+    # on authorization -> send_command_to_server(f"rooms:{uid}")
+    # wait for response, convert to list.
+    # if list is empty -> buzzer! else authorized_ui(list)
     pass
 
 
-def authorized_ui():
+def authorized_ui(rooms):
     pass
 
 
@@ -66,10 +80,18 @@ def on_message_received(c, userdata, msg):
     elif topic == brightness_status_topic:
         brightness = msg.payload.decode()
         handle_brightness_data(brightness)
+    elif topic == server_result_topic:
+        print(f"Response from server: {msg.payload.decode()}")
 
 
-def encoder_decode():
-    pass
+# def rotation_decode(d):
+#     encb = GPIO.input(encoderRight)
+#     if encb == 1:
+#         message = str(0)
+#     else:
+#         message = str(1)
+#     encoded_message = encode_message(message, current_pub_key)
+#     client.publish(topic=encoder_topic, payload=encoded_message)
 
 
 def publish_encoder_1(e):
@@ -108,16 +130,23 @@ def choose_room():
 
 
 def bind_controllers():
+    # GPIO.add_event_detect(encoderLeft, GPIO.FALLING, callback=rotation_decode, bouncetime=50)
     keyboard.on_press_key('e', publish_encoder_1)
     keyboard.on_press_key('q', publish_encoder_0)
     keyboard.on_press_key('x', discard_room)
 
 
+def subscribe():
+    client.subscribe(keys_answers_topic)
+    client.subscribe(brightness_status_topic)
+    client.subscribe(server_result_topic)
+
+
 def setup_broker():
     client.connect(broker_address)
 
-    client.subscribe(keys_answers_topic)
-    client.subscribe(brightness_status_topic)
+    subscribe()
+
 
     client.on_message = on_message_received
 
