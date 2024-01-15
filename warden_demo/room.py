@@ -66,6 +66,7 @@ def subscribe():
 
 def connect_to_broker():
     client.connect(broker_address)
+    print(f"Connected to broker@{broker_address}")
     subscribe()
 
     client.on_message = message_router
@@ -84,5 +85,8 @@ def initialize_room():
 if __name__ == "__main__":
     initialize_room()
     setup_diodes()
-    connect_to_broker()
+    try:
+        connect_to_broker()
+    except TimeoutError:
+        print(f"Can't connect to broker@{broker_address} !")
 
