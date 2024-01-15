@@ -61,7 +61,6 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BrokerId,IPAddress")] Broker broker)
         {
-            ModelState.Clear();
             if (ModelState.IsValid)
             {
                 _context.Add(broker);
@@ -111,7 +110,6 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BrokerId,IPAddress")] Broker broker)
         {
-            ModelState.Clear();
             if (id != broker.BrokerId)
             {
                 return NotFound();

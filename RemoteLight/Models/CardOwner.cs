@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 
 namespace RemoteLight.Models
@@ -10,6 +11,7 @@ namespace RemoteLight.Models
         public string Name { get; set; }
 
         // Relationships
+        [ValidateNever]
         public virtual ICollection<RFIDCard> RFIDCards { get; set; }
     }
 }

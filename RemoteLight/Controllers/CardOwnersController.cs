@@ -61,7 +61,6 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CreatedAt,Name")] CardOwner cardOwner)
         {
-            ModelState.Clear();
             if (ModelState.IsValid)
             {
                 _context.Add(cardOwner);
@@ -111,7 +110,6 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CreatedAt,Name")] CardOwner cardOwner)
         {
-            ModelState.Clear();
             if (id != cardOwner.Id)
             {
                 return NotFound();

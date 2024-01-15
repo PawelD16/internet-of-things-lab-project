@@ -1,4 +1,6 @@
-﻿namespace RemoteLight.Models
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+namespace RemoteLight.Models
 {
     public class Access
     {
@@ -8,7 +10,9 @@
         public string RFIDId { get; set; } // Read-only ID
 
         // Relationships
+        [ValidateNever]
         public virtual Room Room { get; set; }
+        [ValidateNever]
         public virtual RFIDCard RFIDCard { get; set; }
     }
 }

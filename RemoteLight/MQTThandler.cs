@@ -28,6 +28,12 @@ namespace RemoteLight
                 return Task.CompletedTask;
             };
 
+            _mqttClient.ConnectedAsync += e =>
+            {
+                Console.WriteLine("### CONNECTED TO SERVER ###");
+                return Task.CompletedTask;
+            };
+
             _server = server;
             _port = port;
         }

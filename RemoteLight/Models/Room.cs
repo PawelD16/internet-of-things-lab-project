@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 
 namespace RemoteLight.Models
 {
@@ -10,7 +11,9 @@ namespace RemoteLight.Models
         public string TopicName { get; set; }
 
         // Relationships
+        [ValidateNever]
         public virtual Broker Broker { get; set; }
+        [ValidateNever]
         public virtual ICollection<Access> Accesses { get; set; }
     }
 }

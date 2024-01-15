@@ -64,7 +64,6 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,GivenAt,RoomId,RFIDId")] Access access)
         {
-            ModelState.Clear();
             if (ModelState.IsValid)
             {
                 _context.Add(access);
@@ -118,7 +117,6 @@ namespace RemoteLight.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,GivenAt,RoomId,RFIDId")] Access access)
         {
-            ModelState.Clear();
             if (id != access.Id)
             {
                 return NotFound();
