@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+# pylint: disable=no-member
+
+import time
+import RPi.GPIO as GPIO
+from config import *  # pylint: disable=unused-wildcard-import
+from mfrc522 import MFRC522
+
+from config import *  # pylint: disable=unused-wildcard-import
+
+import board
+import neopixel
+
+def buzzer(state):
+    GPIO.output(buzzerPin, not state)  # pylint: disable=no-member
+
+
+def rfidRead():
+    pixels = neopixel.NeoPixel(
+        board.D18, 8, brightness=1.0/32, auto_write=False)
+
+    pixels.fill((0, 0, 255))
+    pixels.show()
+
+    PREVTOGO = [2,2,2,]
+    PrevRead = [2,2,2,]
+    lastRead = time.time()
+
+    buzzTime = time.time()
+    buzz = False
+    
+    MIFAREReader = MFRC522()
+
+    counter = 0
+    while True:
+        if time.time() - buzzTime > 0.5:
+            buzzer(False)
+
+        if PREVTOGO == PrevRead:
+            pixels.fill((0, 0, 255))
+            pixels.show()
+
+        (status, TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
+        if status == MIFAREReader.MI_OK:
+            if PREVTOGO == PrevRead:
+                (status, uid) = MIFAREReader.MFRC522_Anticoll()
+                if status == MIFAREReader.MI_OK:
+                    num = 0
+                    for i in range(0, len(uid)):
+                        num += uid[i] << (i*8)
+                    print(f"Card read UID: {uid} > {num} \t {time.time()}")
+                    counter += 1
+                    buzzTime = time.time()
+                    #buzzer(True)
+                    pixels.fill((0, 255, 0))
+                    pixels.show()
+                lastRead = time.time()
+        PrevRead.pop(0)
+        PrevRead.append(status)
+
+def test():
+    print('\nThe RFID reader test.')
+    print('Place the card close to the reader (on the right side of the set).')
+    rfidRead()
+    print("The RFID reader tested successfully.")
+
+
+if __name__ == "__main__":
+    test()
+    GPIO.cleanup()  # pylint: disable=no-member

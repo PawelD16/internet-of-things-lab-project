@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+from config import *
+import board
+import w1thermsensor
+import adafruit_bme280.advanced as adafruit_bme280
+import busio
+from PIL import Image, ImageDraw, ImageFont
+import lib.oled.SSD1331 as SSD1331
+from math import floor
+
+
+sensor = w1thermsensor.W1ThermSensor()
+i2c = busio.I2C(board.SCL, board.SDA)
+
+fontSmall = ImageFont.truetype('./lib/oled/Font.ttf', 10)
+disp = SSD1331.SSD1331()
+disp.Init()
+
+
+def data():
+    bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, 0x76)
+    bme280.sea_level_pressure = 1013.25
+    bme280.standby_period = adafruit_bme280.STANDBY_TC_500
+    bme280.iir_filter = adafruit_bme280.IIR_FILTER_X16
+    bme280.overscan_pressure = adafruit_bme280.OVERSCAN_X16
+    bme280.overscan_humidity = adafruit_bme280.OVERSCAN_X1
+    bme280.overscan_temperature = adafruit_bme280.OVERSCAN_X2
+
+    return ((bme280.temperature + sensor.get_temperature()) / 2, bme280.humidity, bme280.pressure, bme280.altitude)
+
+
+def oled(temp, humidity, pressure, altitude, imageUrl):
+    background = Image.new("RGB", (disp.width, disp.height), "BLACK")
+    draw = ImageDraw.Draw(background)
+    draw.text((0, 0), f'Temp: {temp:0.1f} ' + chr(176) + 'C', font=fontSmall, fill="WHITE")
+    draw.text((0, 10), f'Hum: {humidity:0.1f} %', font=fontSmall, fill="WHITE")
+    draw.text((0, 20), f'Pres: {pressure:0.1f} hPa', font=fontSmall, fill="WHITE")
+    draw.text((0, 30), f'Alt: {altitude:0.2f} m', font=fontSmall, fill="WHITE")
+
+    image = Image.open(imageUrl).convert('RGB')
+    background.paste(image.resize((floor(image.width * 0.4), floor(image.height * 0.4))), (64, 32))
+    disp.ShowImage(background, 0, 0)
+
+
+bme280_param_tuple = data()
+prevTemperature = bme280_param_tuple[0]
+prevHumidity = bme280_param_tuple[1]
+prevPressure = bme280_param_tuple[2]
+prevAltitude = bme280_param_tuple[3]
+
+
+def main():
+    global prevTemperature
+    global prevHumidity
+    global prevPressure
+    global prevAltitude
+    while True:
+        (cTemp, cHum, cPres, cAlt) = data()
+
+        if (prevTemperature != cTemp or prevHumidity != cHum or prevPressure != cPres or prevAltitude != cAlt):
+            oled(cTemp, cHum, cPres, cAlt, './lib/oled/pic.jpg')
+
+        prevTemperature = cTemp
+        prevHumidity = cHum
+        prevPressure = cPres
+        prevAltitude = cAlt
+
+
+if __name__ == "__main__":
+    main()
