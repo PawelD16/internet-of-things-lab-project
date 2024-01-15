@@ -18,7 +18,6 @@ def init_menu():
     disp = SSD1331.SSD1331()
     disp.Init()
     disp.clear()
-    bind_controllers()
     return disp
 
 
@@ -33,6 +32,15 @@ def menu(disp, options):
             draw.rectangle(bbox, fill="GREEN")
         
         draw.text((5, index * 16), f'Pokoj nr {str(option)}', font=fontSmall, fill="WHITE")
+
+    disp.ShowImage(image1, 0, 0)
+
+
+def display_brightness(disp, brithness):
+    image1 = Image.new("RGB", (disp.width, disp.height), "BLACK")
+    draw = ImageDraw.Draw(image1)
+    fontSmall = ImageFont.truetype('./lib/oled/Font.ttf', 13)
+    draw.text((5, 20), f'Brightness: {str(brithness)}', font=fontSmall, fill="WHITE")
 
     disp.ShowImage(image1, 0, 0)
 
@@ -65,9 +73,7 @@ def start_menu(options):
     global rotated
     allOptions = options
     disp = init_menu()
-    while True:
-        if rotated and not optionChoosen:
-            menu(disp, allOptions)
+    menu(disp, allOptions)
 
 
 if __name__ == "__main__":
