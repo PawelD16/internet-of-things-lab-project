@@ -1,0 +1,11 @@
+Projekt .NET
+[ ] Ogarnięcie UI I:
+    [ ] Usunięcie pewnych widoków (np. dla AccessLogs powinny istniec tylko Index, details oraz delete)
+    [ ] Kosmetyczne zmiany widoków (strona główna, zmiany labeli itp.)
+[ ] Ogarnięcie CRUD - wartości pól modeli takie jak CreatedAt mają być generowane na podstawie obecnej daty
+[ ] Dodanie szyfrowania (np. SSL/TLS) do komunikacji między brokerem a serverem .NETowym (haker mógłby przechwicić poufne info, np. takie jak id karty)
+[ ] Wykorzystanie Identity do ukrycia wszystkich funkcjonalności CRUD za autoryzacją
+[ ] Implementacja tworzenia rekordów AccessLogs przy każdym nowym zapytaniu o pokoje
+
+Dodatkowo (z gwiazdką) do .NETa:
+[ ] Dodanie walidacji do wprowadzania adresów IP (frontendowo)
