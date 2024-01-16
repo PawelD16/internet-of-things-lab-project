@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +12,7 @@ using RemoteLight.Models;
 
 namespace RemoteLight.Controllers
 {
+    [Authorize]
     public class CardOwnersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -59,7 +61,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CreatedAt,Name")] CardOwner cardOwner)
+        public async Task<IActionResult> Create([Bind("Id,Name")] CardOwner cardOwner)
         {
             if (ModelState.IsValid)
             {
@@ -108,7 +110,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CreatedAt,Name")] CardOwner cardOwner)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] CardOwner cardOwner)
         {
             if (id != cardOwner.Id)
             {

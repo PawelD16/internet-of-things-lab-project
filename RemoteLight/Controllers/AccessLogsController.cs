@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -48,100 +49,7 @@ namespace RemoteLight.Controllers
             return View(accessLog);
         }
 
-        // GET: AccessLogs/Create
-        public IActionResult Create()
-        {
-            ViewData["RFIDCardId"] = new SelectList(_context.RFIDCards, "Id", "Id");
-            return View();
-        }
-
-        // POST: AccessLogs/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CreatedAt,Data,RFIDCardId")] AccessLog accessLog)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(accessLog);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            else
-            {
-                // Log the error with details about the invalid model state
-                _logger.LogError("Failed to create Access log record. Invalid model state.");
-                foreach (var keyValuePair in ModelState)
-                {
-                    string key = keyValuePair.Key;
-                    ModelStateEntry entry = keyValuePair.Value;
-
-                    foreach (var error in entry.Errors)
-                    {
-                        string errorMessage = error.ErrorMessage;
-                        // Log the key and error message
-                        _logger.LogError($"Error in '{key}': {errorMessage}");
-                    }
-                }
-            }
-            ViewData["RFIDCardId"] = new SelectList(_context.RFIDCards, "Id", "Id", accessLog.RFIDCardId);
-            return View(accessLog);
-        }
-
-        // GET: AccessLogs/Edit/5
-        public async Task<IActionResult> Edit(long? id)
-        {
-            if (id == null || _context.AccessLogs == null)
-            {
-                return NotFound();
-            }
-
-            var accessLog = await _context.AccessLogs.FindAsync(id);
-            if (accessLog == null)
-            {
-                return NotFound();
-            }
-            ViewData["RFIDCardId"] = new SelectList(_context.RFIDCards, "Id", "Id", accessLog.RFIDCardId);
-            return View(accessLog);
-        }
-
-        // POST: AccessLogs/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("Id,CreatedAt,Data,RFIDCardId")] AccessLog accessLog)
-        {
-            if (id != accessLog.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(accessLog);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AccessLogExists(accessLog.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["RFIDCardId"] = new SelectList(_context.RFIDCards, "Id", "Id", accessLog.RFIDCardId);
-            return View(accessLog);
-        }
-
+        [Authorize]
         // GET: AccessLogs/Delete/5
         public async Task<IActionResult> Delete(long? id)
         {
@@ -161,6 +69,7 @@ namespace RemoteLight.Controllers
             return View(accessLog);
         }
 
+        [Authorize]
         // POST: AccessLogs/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

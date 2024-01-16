@@ -23,6 +23,16 @@ namespace RemoteLight.Areas.Identity.Pages.Account
 {
     public class RegisterModel : PageModel
     {
+        public IActionResult OnGet()
+        {
+            return RedirectToPage("Login");
+        }
+
+        public IActionResult OnPost()
+        {
+            return RedirectToPage("Login");
+        }
+        /* DELETING THESE CLASSES DOESNT FOR SOME REASON DIABLE REGISTERING!
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IUserStore<IdentityUser> _userStore;
@@ -176,5 +186,6 @@ namespace RemoteLight.Areas.Identity.Pages.Account
             }
             return (IUserEmailStore<IdentityUser>)_userStore;
         }
+        */
     }
 }

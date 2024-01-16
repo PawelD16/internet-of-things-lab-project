@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +12,7 @@ using RemoteLight.Models;
 
 namespace RemoteLight.Controllers
 {
+    [Authorize]
     public class RFIDCardsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -51,7 +53,7 @@ namespace RemoteLight.Controllers
         // GET: RFIDCards/Create
         public IActionResult Create()
         {
-            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Id");
+            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Name");
             return View();
         }
 
@@ -60,7 +62,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CardOwnerId")] RFIDCard rFIDCard)
+        public async Task<IActionResult> Create([Bind("Id,FkCardOwnerId")] RFIDCard rFIDCard)
         {
             if (ModelState.IsValid)
             {
@@ -85,7 +87,7 @@ namespace RemoteLight.Controllers
                     }
                 }
             }
-            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Id", rFIDCard.CardOwnerId);
+            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Name", rFIDCard.FkCardOwnerId);
             return View(rFIDCard);
         }
 
@@ -102,7 +104,7 @@ namespace RemoteLight.Controllers
             {
                 return NotFound();
             }
-            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Id", rFIDCard.CardOwnerId);
+            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Name", rFIDCard.FkCardOwnerId);
             return View(rFIDCard);
         }
 
@@ -111,7 +113,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,CardOwnerId")] RFIDCard rFIDCard)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,FkCardOwnerId")] RFIDCard rFIDCard)
         {
             if (id != rFIDCard.Id)
             {
@@ -138,7 +140,7 @@ namespace RemoteLight.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Id", rFIDCard.CardOwnerId);
+            ViewData["CardOwnerId"] = new SelectList(_context.CardOwners, "Id", "Name", rFIDCard.FkCardOwnerId);
             return View(rFIDCard);
         }
 

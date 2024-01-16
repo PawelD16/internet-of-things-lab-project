@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MQTTnet;
@@ -12,9 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("MyDb");
 
-MQTThandler mqqtthandler = new MQTThandler(connectionString);
-
-
+MQTThandler mqqtthandler = new(connectionString);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -52,4 +51,17 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
+var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+
+using (var scope = scopeFactory.CreateScope())
+{
+    // var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    MyIdentityDataInitializer.SeedData(userManager);
+}
+
 app.Run();
+
+ServicePointManager
+	.ServerCertificateValidationCallback +=
+	(sender, cert, chain, sslPolicyErrors) => true;

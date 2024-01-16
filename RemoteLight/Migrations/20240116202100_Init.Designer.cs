@@ -3,17 +3,19 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RemoteLight.Data;
 
 #nullable disable
 
-namespace RemoteLight.Data.Migrations
+namespace RemoteLight.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240116202100_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,22 +234,22 @@ namespace RemoteLight.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<string>("FkRFIDId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FkRoomId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("GivenAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RFIDId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("RoomId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("RFIDId");
+                    b.HasIndex("FkRFIDId");
 
-                    b.HasIndex("RoomId");
+                    b.HasIndex("FkRoomId");
 
                     b.ToTable("Accesses");
                 });
@@ -267,13 +269,13 @@ namespace RemoteLight.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RFIDCardId")
+                    b.Property<string>("FkRFIDCardId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RFIDCardId");
+                    b.HasIndex("FkRFIDCardId");
 
                     b.ToTable("AccessLogs");
                 });
@@ -320,12 +322,13 @@ namespace RemoteLight.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("CardOwnerId")
+                    b.Property<int>("FkCardOwnerId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CardOwnerId");
+                    b.HasIndex("FkCardOwnerId")
+                        .IsUnique();
 
                     b.ToTable("RFIDCards");
                 });
@@ -339,7 +342,7 @@ namespace RemoteLight.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("IdBroker")
+                    b.Property<int>("FkIdBroker")
                         .HasColumnType("int");
 
                     b.Property<string>("TopicName")
@@ -348,7 +351,7 @@ namespace RemoteLight.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdBroker");
+                    b.HasIndex("FkIdBroker");
 
                     b.ToTable("Rooms");
                 });
@@ -408,13 +411,13 @@ namespace RemoteLight.Data.Migrations
                 {
                     b.HasOne("RemoteLight.Models.RFIDCard", "RFIDCard")
                         .WithMany("Accesses")
-                        .HasForeignKey("RFIDId")
+                        .HasForeignKey("FkRFIDId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("RemoteLight.Models.Room", "Room")
                         .WithMany("Accesses")
-                        .HasForeignKey("RoomId")
+                        .HasForeignKey("FkRoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -427,7 +430,7 @@ namespace RemoteLight.Data.Migrations
                 {
                     b.HasOne("RemoteLight.Models.RFIDCard", "RFIDCard")
                         .WithMany("AccessLogs")
-                        .HasForeignKey("RFIDCardId")
+                        .HasForeignKey("FkRFIDCardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -437,8 +440,8 @@ namespace RemoteLight.Data.Migrations
             modelBuilder.Entity("RemoteLight.Models.RFIDCard", b =>
                 {
                     b.HasOne("RemoteLight.Models.CardOwner", "CardOwner")
-                        .WithMany("RFIDCards")
-                        .HasForeignKey("CardOwnerId")
+                        .WithOne("RFIDCard")
+                        .HasForeignKey("RemoteLight.Models.RFIDCard", "FkCardOwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -449,7 +452,7 @@ namespace RemoteLight.Data.Migrations
                 {
                     b.HasOne("RemoteLight.Models.Broker", "Broker")
                         .WithMany("Rooms")
-                        .HasForeignKey("IdBroker")
+                        .HasForeignKey("FkIdBroker")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -463,7 +466,8 @@ namespace RemoteLight.Data.Migrations
 
             modelBuilder.Entity("RemoteLight.Models.CardOwner", b =>
                 {
-                    b.Navigation("RFIDCards");
+                    b.Navigation("RFIDCard")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("RemoteLight.Models.RFIDCard", b =>

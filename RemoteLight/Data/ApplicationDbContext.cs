@@ -24,33 +24,33 @@ namespace RemoteLight.Data
 
             // User to RFIDCard relationship
             builder.Entity<CardOwner>()
-                .HasMany(u => u.RFIDCards)
-                .WithOne(rc => rc.CardOwner)
-                .HasForeignKey(rc => rc.CardOwnerId);
+                .HasOne(rc => rc.RFIDCard)
+                .WithOne(u => u.CardOwner)
+                .HasForeignKey<RFIDCard>(rc => rc.FkCardOwnerId);
 
             // RFIDCard to AccessLog relationship
             builder.Entity<RFIDCard>()
                 .HasMany(rf => rf.AccessLogs)
                 .WithOne(al => al.RFIDCard)
-                .HasForeignKey(al => al.RFIDCardId);
+                .HasForeignKey(al => al.FkRFIDCardId);
 
             // RFIDCard to Access relationship
             builder.Entity<RFIDCard>()
                 .HasMany(rf => rf.Accesses)
                 .WithOne(a => a.RFIDCard)
-                .HasForeignKey(a => a.RFIDId);
+                .HasForeignKey(a => a.FkRFIDId);
 
             // Access to Room relationship
             builder.Entity<Access>()
                 .HasOne(a => a.Room)
                 .WithMany(r => r.Accesses)
-                .HasForeignKey(a => a.RoomId);
+                .HasForeignKey(a => a.FkRoomId);
 
             // Room to Broker relationship
             builder.Entity<Room>()
                 .HasOne(r => r.Broker)
                 .WithMany(b => b.Rooms)
-                .HasForeignKey(r => r.IdBroker);
+                .HasForeignKey(r => r.FkIdBroker);
         }
     }
 }

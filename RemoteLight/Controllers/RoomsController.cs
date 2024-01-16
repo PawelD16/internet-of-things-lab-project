@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +12,7 @@ using RemoteLight.Models;
 
 namespace RemoteLight.Controllers
 {
+    [Authorize]
     public class RoomsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -51,7 +53,7 @@ namespace RemoteLight.Controllers
         // GET: Rooms/Create
         public IActionResult Create()
         {
-            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "BrokerId");
+            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress");
             return View();
         }
 
@@ -60,7 +62,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,AdditionalInformation,IdBroker,TopicName")] Room room)
+        public async Task<IActionResult> Create([Bind("Id,AdditionalInformation,FkIdBroker,TopicName")] Room room)
         {
             if (ModelState.IsValid)
             {
@@ -85,7 +87,7 @@ namespace RemoteLight.Controllers
                     }
                 }
             }
-            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "BrokerId", room.IdBroker);
+            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkIdBroker);
             return View(room);
         }
 
@@ -102,7 +104,7 @@ namespace RemoteLight.Controllers
             {
                 return NotFound();
             }
-            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "BrokerId", room.IdBroker);
+            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkIdBroker);
             return View(room);
         }
 
@@ -111,7 +113,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,AdditionalInformation,IdBroker,TopicName")] Room room)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,AdditionalInformation,FkIdBroker,TopicName")] Room room)
         {
             if (id != room.Id)
             {
@@ -138,7 +140,7 @@ namespace RemoteLight.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "BrokerId", room.IdBroker);
+            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkIdBroker);
             return View(room);
         }
 

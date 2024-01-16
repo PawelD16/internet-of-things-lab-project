@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLight", "RemoteLight.csproj", "{4DB45E50-22BC-42CE-9D90-B45CC4467A1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteLight", "RemoteLight.csproj", "{4DB45E50-22BC-42CE-9D90-B45CC4467A1D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MQTTSubscriber", "..\MQTTSubscriber\MQTTSubscriber.csproj", "{C0DDD881-1C1A-4942-8507-98ABB32A3D8D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MQTTPublisher", "..\MQTTPublisher\MQTTPublisher.csproj", "{D1A8B07E-53E1-46B8-B906-38DA384F7DF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{4DB45E50-22BC-42CE-9D90-B45CC4467A1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DB45E50-22BC-42CE-9D90-B45CC4467A1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DB45E50-22BC-42CE-9D90-B45CC4467A1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0DDD881-1C1A-4942-8507-98ABB32A3D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0DDD881-1C1A-4942-8507-98ABB32A3D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0DDD881-1C1A-4942-8507-98ABB32A3D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0DDD881-1C1A-4942-8507-98ABB32A3D8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1A8B07E-53E1-46B8-B906-38DA384F7DF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1A8B07E-53E1-46B8-B906-38DA384F7DF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1A8B07E-53E1-46B8-B906-38DA384F7DF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1A8B07E-53E1-46B8-B906-38DA384F7DF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

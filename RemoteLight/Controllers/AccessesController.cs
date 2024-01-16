@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +12,7 @@ using RemoteLight.Models;
 
 namespace RemoteLight.Controllers
 {
+    [Authorize]
     public class AccessesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -52,7 +54,8 @@ namespace RemoteLight.Controllers
         // GET: Accesses/Create
         public IActionResult Create()
         {
-            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id");
+            var chuj = new SelectList(_context.RFIDCards, "Id", "Id");
+            ViewData["RFIDId"] = chuj;
             ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id");
             return View();
         }
@@ -62,7 +65,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,GivenAt,RoomId,RFIDId")] Access access)
+        public async Task<IActionResult> Create([Bind("Id,FkRoomId,FkRFIDId")] Access access)
         {
             if (ModelState.IsValid)
             {
@@ -87,8 +90,8 @@ namespace RemoteLight.Controllers
                     }
                 }
             }
-            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.RFIDId);
-            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.RoomId);
+            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDId);
+            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.FkRoomId);
             return View(access);
         }
 
@@ -105,8 +108,8 @@ namespace RemoteLight.Controllers
             {
                 return NotFound();
             }
-            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.RFIDId);
-            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.RoomId);
+            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDId);
+            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.FkRoomId);
             return View(access);
         }
 
@@ -115,7 +118,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,GivenAt,RoomId,RFIDId")] Access access)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FkRoomId,FkRFIDId")] Access access)
         {
             if (id != access.Id)
             {
@@ -142,8 +145,8 @@ namespace RemoteLight.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.RFIDId);
-            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.RoomId);
+            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDId);
+            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.FkRoomId);
             return View(access);
         }
 

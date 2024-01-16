@@ -2,16 +2,17 @@
 using MQTTnet;
 using MQTTnet.Client;
 using RemoteLight.Data;
+using RemoteLight.Models;
 using System.Threading.Channels;
 
 namespace RemoteLight
 {
     public class MQTThandler
     {
-        private IMqttClient _mqttClient;
-        private string _server;
-        private int _port;
-        private string _conectionString;
+        private readonly IMqttClient _mqttClient;
+        private readonly string _server;
+        private readonly int _port;
+        private readonly string _conectionString;
         private ApplicationDbContext _context;
 
         public MQTThandler(string conectionString, string server="broker.hivemq.com", int port=1883)
@@ -95,7 +96,7 @@ namespace RemoteLight
             Console.WriteLine($"+ QoS = {e.ApplicationMessage.QualityOfServiceLevel}");
             Console.WriteLine($"+ Retain = {e.ApplicationMessage.Retain}");
 
-            DbContextOptionsBuilder<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>();
+            DbContextOptionsBuilder<ApplicationDbContext> options = new();
             options.UseSqlServer(_conectionString);
             _context = new ApplicationDbContext(options.Options);
 
@@ -106,17 +107,37 @@ namespace RemoteLight
                 .Where(rfid => rfid.Id == RFIDCardId)
                 .SingleOrDefaultAsync(m => m.Id == RFIDCardId);
 
+                AccessLog accessLog;
                 if (RFIDCard == null)
                 {
                     Console.WriteLine("Card has not been found.");
+                    accessLog = new()
+                    {
+
+                        FkRFIDCardId = RFIDCardId,
+                        Data = $"Card with id {RFIDCardId} was not found in the database",
+                    };
                 }
                 else
                 {
-                    var accessesRoomIds = _context.Accesses.Where(a => a.RFIDId == RFIDCardId).Select(a => a.RoomId).ToList();
+                    var accessesRoomIds = _context.Accesses.Where(a => a.FkRFIDId == RFIDCardId).Select(a => a.FkRoomId).ToList();
                     var result = string.Join(",", accessesRoomIds);
+                    var cardOwner = _context.RFIDCards.SingleAsync(c => c.Id == RFIDCardId).Result;
+
+                    accessLog = new()
+                    {
+
+                        FkRFIDCardId = RFIDCardId,
+                        Data = $"RFID Card used, result: {result}{(cardOwner != null ? ", card belongs to: " + cardOwner : "")}",
+                    };
+                    _context.Add(accessLog);
                     Console.WriteLine(result);
                     await SendMessage("server/result", result);
                 }
+
+                _context.Add(accessLog);
+                _context.SaveChanges();
+
             }
         }
         public async Task SendMessage(string topic ="server/result", string payload ="message")

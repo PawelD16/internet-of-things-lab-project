@@ -1,17 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RemoteLight.Models
 {
     public class CardOwner
     {
-        public int Id { get; set; } // Read-only ID
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string Name { get; set; }
+        public int Id { get; set; }
 
-        // Relationships
+        [Display(Name = "Created at")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [Display(Name = "Name of card owner")]
+        public string Name { get; set; } = string.Empty;
+
         [ValidateNever]
-        public virtual ICollection<RFIDCard> RFIDCards { get; set; }
+        public virtual RFIDCard RFIDCard { get; set; }
     }
 }
