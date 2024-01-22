@@ -21,7 +21,8 @@ keys_requests_topic = "messages/key/requests"
 keys_answers_topic = "messages/key/answers"
 brightness_status_topic = "messages/brightness"
 server_command_topic = "server/command"
-server_result_topic = "server/result"
+server_rooms_result_topic = "server/rooms/results2"
+server_auth_result_topic = "server/auth/results2"
 
 
 current_pub_key = ""
@@ -65,6 +66,14 @@ def discard_room(e):
         current_room = 0
         choose_room()
 
+def send_room_request(e):
+    # example "rooms:uid" -> List<Room>
+    print("room request sent")
+    client.publish(server_command_topic, payload=str("rooms:1"))
+
+def send_auth_request(e):
+    print("auth request sent")
+    client.publish(server_command_topic, payload=str("authuser:5"))
 
 def setup_current_public_key(msg):
     global current_pub_key
@@ -80,8 +89,10 @@ def on_message_received(c, userdata, msg):
     elif topic == brightness_status_topic:
         brightness = msg.payload.decode()
         handle_brightness_data(brightness)
-    elif topic == server_result_topic:
-        print(f"Response from server: {msg.payload.decode()}")
+    elif topic == server_rooms_result_topic:
+        print(f"Response from server (room): {msg.payload.decode()}")
+    elif topic == server_auth_result_topic:
+        print(f"Response from server (auth): {msg.payload.decode()}")
 
 
 # def rotation_decode(d):
@@ -134,12 +145,15 @@ def bind_controllers():
     keyboard.on_press_key('e', publish_encoder_1)
     keyboard.on_press_key('q', publish_encoder_0)
     keyboard.on_press_key('x', discard_room)
+    keyboard.on_press_key('r', send_room_request)
+    keyboard.on_press_key('a', send_auth_request)
 
 
 def subscribe():
     client.subscribe(keys_answers_topic)
     client.subscribe(brightness_status_topic)
-    client.subscribe(server_result_topic)
+    client.subscribe(server_rooms_result_topic)
+    client.subscribe(server_auth_result_topic)
 
 
 def setup_broker():

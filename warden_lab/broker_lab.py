@@ -43,6 +43,8 @@ def send_command_to_server(command):
 
 
 def unauthorized_ui():
+    while not authorized:
+    # dopoki unauthorized -> czytaj karte
     # on authorization -> send_command_to_server(f"rooms:{uid}")
     # wait for response, convert to list.
     # if list is empty -> buzzer! else authorized_ui(list)
@@ -199,7 +201,6 @@ def setup_broker():
 
 
 if __name__ == "__main__":
-    while not authorized:
-        unauthorized_ui()
+    unauthorized_ui()
     setup_broker()
 
