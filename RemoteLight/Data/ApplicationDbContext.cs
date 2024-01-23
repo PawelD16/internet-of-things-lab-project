@@ -38,7 +38,7 @@ namespace RemoteLight.Data
             builder.Entity<RFIDCard>()
                 .HasMany(rf => rf.Accesses)
                 .WithOne(a => a.RFIDCard)
-                .HasForeignKey(a => a.FkRFIDId);
+                .HasForeignKey(a => a.FkRFIDCardId);
 
             // Access to Room relationship
             builder.Entity<Access>()
@@ -50,7 +50,14 @@ namespace RemoteLight.Data
             builder.Entity<Room>()
                 .HasOne(r => r.Broker)
                 .WithMany(b => b.Rooms)
-                .HasForeignKey(r => r.FkIdBroker);
+                .HasForeignKey(r => r.FkBrokerId);
+
+            // Broker unique index
+            builder.Entity<Broker>()
+                .HasIndex(b => b.IPAddress)
+                .IsUnique(true);
+
+            builder.SeedDatabase();
         }
     }
 }

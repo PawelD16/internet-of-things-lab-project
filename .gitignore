@@ -3,6 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 iot.vpp.*
+.iot.vpp.lck
 
 # User-specific files
 *.rsuser

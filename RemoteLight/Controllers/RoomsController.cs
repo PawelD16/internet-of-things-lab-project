@@ -62,7 +62,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,AdditionalInformation,FkIdBroker,TopicName")] Room room)
+        public async Task<IActionResult> Create([Bind("Id,AdditionalInformation,FkIdBroker")] Room room)
         {
             if (ModelState.IsValid)
             {
@@ -87,7 +87,7 @@ namespace RemoteLight.Controllers
                     }
                 }
             }
-            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkIdBroker);
+            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkBrokerId);
             return View(room);
         }
 
@@ -104,7 +104,7 @@ namespace RemoteLight.Controllers
             {
                 return NotFound();
             }
-            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkIdBroker);
+            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkBrokerId);
             return View(room);
         }
 
@@ -113,7 +113,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,AdditionalInformation,FkIdBroker,TopicName")] Room room)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,AdditionalInformation,FkIdBroker")] Room room)
         {
             if (id != room.Id)
             {
@@ -140,7 +140,7 @@ namespace RemoteLight.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkIdBroker);
+            ViewData["IdBroker"] = new SelectList(_context.Brokers, "BrokerId", "IPAddress", room.FkBrokerId);
             return View(room);
         }
 

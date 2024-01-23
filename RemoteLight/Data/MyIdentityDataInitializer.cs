@@ -15,7 +15,7 @@ namespace RemoteLight.Data
             {
                 IdentityUser user = new()
                 {
-                    UserName = name, // musi być taki sam jak email, inaczej nie zadziała
+                    UserName = name,
                     Email = name
                 };
                 IdentityResult result = userManager.CreateAsync(user, password).Result;

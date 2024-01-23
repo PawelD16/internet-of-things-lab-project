@@ -61,7 +61,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BrokerId,IPAddress")] Broker broker)
+        public async Task<IActionResult> Create([Bind("BrokerId,IPAddress,Port")] Broker broker)
         {
             if (ModelState.IsValid)
             {
@@ -110,7 +110,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BrokerId,IPAddress")] Broker broker)
+        public async Task<IActionResult> Edit(int id, [Bind("BrokerId,IPAddress,Port")] Broker broker)
         {
             if (id != broker.BrokerId)
             {

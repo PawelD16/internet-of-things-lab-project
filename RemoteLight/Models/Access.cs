@@ -8,11 +8,13 @@ namespace RemoteLight.Models
         public int Id { get; set; }
         public DateTime GivenAt { get; set; } = DateTime.Now;
 
+        [Required]
         [Display(Name = "Room")]
         public string FkRoomId { get; set; } = string.Empty;
 
+        [Required]
         [Display(Name = "RFID Card")]
-        public string FkRFIDId { get; set; } = string.Empty;
+        public string FkRFIDCardId { get; set; } = string.Empty;
 
         // Relationships
         [ValidateNever]

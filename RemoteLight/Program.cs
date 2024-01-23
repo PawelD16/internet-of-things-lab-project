@@ -3,26 +3,29 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MQTTnet;
 using MQTTnet.Client;
-using RemoteLight;
 using RemoteLight.Data;
+using RemoteLight.MQTTServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-
 var connectionString = builder.Configuration.GetConnectionString("MyDb");
 
-MQTThandler mqqtthandler = new(connectionString);
+builder.Services.AddHostedService<MqttBackgroundService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+//MQTTInitializer mqttInit = new(connectionString);
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddHostedService<MqttBackgroundService>();
 
 var app = builder.Build();
 

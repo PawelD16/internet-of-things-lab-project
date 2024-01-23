@@ -5,17 +5,17 @@ using RemoteLight.Data;
 using RemoteLight.Models;
 using System.Threading.Channels;
 
-namespace RemoteLight
+namespace RemoteLight.MQTTServices
 {
-    public class MQTThandler
+    public class MQTTHandler
     {
         private readonly IMqttClient _mqttClient;
-        private readonly string _server;
+        public string ServerIp { get; set; }
         private readonly int _port;
         private readonly string _conectionString;
         private ApplicationDbContext _context;
 
-        public MQTThandler(string conectionString, string server="broker.hivemq.com", int port=1883)
+        public MQTTHandler(string conectionString, string server = "broker.hivemq.com", int port = 1883)
         {
             var factory = new MqttFactory();
             _mqttClient = factory.CreateMqttClient();
@@ -39,22 +39,22 @@ namespace RemoteLight
                 return Task.CompletedTask;
             };
 
-            _server = server;
+            ServerIp = server;
             _port = port;
             Connect().Wait();
             Subscribe().Wait();
         }
 
-        ~MQTThandler()
+        ~MQTTHandler()
         {
-             Disconnect().Wait();
+            Disconnect().Wait();
         }
 
         public async Task Connect()
         {
             var options = new MqttClientOptionsBuilder()
                 .WithClientId(Guid.NewGuid().ToString())
-                .WithTcpServer(_server, _port)
+                .WithTcpServer(ServerIp, _port)
                 .WithCleanSession()
                 .Build();
 
@@ -66,7 +66,7 @@ namespace RemoteLight
             await _mqttClient.DisconnectAsync();
         }
 
-        public async Task Subscribe(string topic="server/command")
+        public async Task Subscribe(string topic = "server/command")
         {
             if (!_mqttClient.IsConnected)
             {
@@ -78,7 +78,7 @@ namespace RemoteLight
             await _mqttClient.SubscribeAsync(topicFilter);
         }
 
-        public async Task Unsubscribe(string topic="server/command")
+        public async Task Unsubscribe(string topic = "server/command")
         {
             if (!_mqttClient.IsConnected)
             {
@@ -91,7 +91,7 @@ namespace RemoteLight
         {
             Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
             Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
-            String payload = System.Text.Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+            string payload = System.Text.Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
             Console.WriteLine($"+ Payload = {payload}");
             Console.WriteLine($"+ QoS = {e.ApplicationMessage.QualityOfServiceLevel}");
             Console.WriteLine($"+ Retain = {e.ApplicationMessage.Retain}");
@@ -100,12 +100,12 @@ namespace RemoteLight
             options.UseSqlServer(_conectionString);
             _context = new ApplicationDbContext(options.Options);
 
-            if (payload.StartsWith("rooms"))
+            if (payload.ToLower().StartsWith("rooms"))
             {
-                String RFIDCardId = payload.Split(':')[1];
+                string RFIDCardId = payload.Split(':')[1];
                 var RFIDCard = await _context.RFIDCards
-                .Where(rfid => rfid.Id == RFIDCardId)
-                .SingleOrDefaultAsync(m => m.Id == RFIDCardId);
+                    .Where(rfid => rfid.Id == RFIDCardId)
+                    .SingleOrDefaultAsync(m => m.Id == RFIDCardId);
 
                 AccessLog accessLog;
                 if (RFIDCard == null)
@@ -113,20 +113,19 @@ namespace RemoteLight
                     Console.WriteLine("Card has not been found.");
                     accessLog = new()
                     {
-
                         FkRFIDCardId = RFIDCardId,
+
                         Data = $"Card with id {RFIDCardId} was not found in the database",
                     };
                 }
                 else
                 {
-                    var accessesRoomIds = _context.Accesses.Where(a => a.FkRFIDId == RFIDCardId).Select(a => a.FkRoomId).ToList();
+                    var accessesRoomIds = _context.Accesses.Where(a => a.FkRFIDCardId == RFIDCardId).Select(a => a.FkRoomId).ToList();
                     var result = string.Join(",", accessesRoomIds);
                     var cardOwner = _context.RFIDCards.SingleAsync(c => c.Id == RFIDCardId).Result;
 
                     accessLog = new()
                     {
-
                         FkRFIDCardId = RFIDCardId,
                         Data = $"RFID Card used, result: {result}{(cardOwner != null ? ", card belongs to: " + cardOwner : "")}",
                     };
@@ -135,12 +134,13 @@ namespace RemoteLight
                     await SendMessage("server/result", result);
                 }
 
-                _context.Add(accessLog);
-                _context.SaveChanges();
+                // _context.Add(accessLog);
+                // _context.SaveChanges();
 
             }
         }
-        public async Task SendMessage(string topic ="server/result", string payload ="message")
+
+        public async Task SendMessage(string topic = "server/result", string payload = "message")
         {
             var message = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
@@ -148,7 +148,7 @@ namespace RemoteLight
                 .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
                 .Build();
 
-            if(_mqttClient.IsConnected)
+            if (_mqttClient.IsConnected)
             {
                 try
                 {

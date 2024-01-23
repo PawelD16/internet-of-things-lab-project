@@ -90,7 +90,7 @@ namespace RemoteLight.Controllers
                     }
                 }
             }
-            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDId);
+            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDCardId);
             ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.FkRoomId);
             return View(access);
         }
@@ -108,7 +108,7 @@ namespace RemoteLight.Controllers
             {
                 return NotFound();
             }
-            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDId);
+            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDCardId);
             ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.FkRoomId);
             return View(access);
         }
@@ -145,7 +145,7 @@ namespace RemoteLight.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDId);
+            ViewData["RFIDId"] = new SelectList(_context.RFIDCards, "Id", "Id", access.FkRFIDCardId);
             ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", access.FkRoomId);
             return View(access);
         }
