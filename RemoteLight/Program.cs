@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("MyDb");
 
-builder.Services.AddHostedService<MqttBackgroundService>();
+//builder.Services.AddHostedService<MqttBackgroundService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -24,8 +24,6 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
-
-builder.Services.AddHostedService<MqttBackgroundService>();
 
 var app = builder.Build();
 
@@ -63,8 +61,17 @@ using (var scope = scopeFactory.CreateScope())
     MyIdentityDataInitializer.SeedData(userManager);
 }
 
+ApplyMigrations(app);
 app.Run();
 
 ServicePointManager
 	.ServerCertificateValidationCallback +=
 	(sender, cert, chain, sslPolicyErrors) => true;
+
+void ApplyMigrations(IApplicationBuilder app)
+{
+	using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+	using var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+	ctx.Database.Migrate();
+}
