@@ -9,8 +9,8 @@ namespace RemoteLight.Data
             SeedUsers(userManager);
         }
 
-        public static void SeedOneUser(UserManager<IdentityUser> userManager, string name, string password, string role = null)
-        {
+		public static void SeedOneUser(UserManager<IdentityUser> userManager, string name, string password, string? role = null)
+		{
             if (userManager.FindByNameAsync(name).Result == null)
             {
                 IdentityUser user = new()

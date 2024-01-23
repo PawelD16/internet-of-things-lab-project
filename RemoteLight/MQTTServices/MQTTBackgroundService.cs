@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MQTTnet;
 using MQTTnet.Client;
 using System.Collections.Concurrent;
+using System.Collections.Specialized;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,75 +18,11 @@ public class MqttBackgroundService : IHostedService
 	private readonly string RECEIVE_TOPIC = "server/commmand";
 	private readonly string RESPONSE_TOPIC = "server/result";
 
-	//private Timer _updateTimer;
-
 	[Obsolete]
 	public MqttBackgroundService(IServiceScopeFactory scopeFactory)
 	{
 		_scopeFactory = scopeFactory;
-		//_updateTimer = new Timer(UpdateBrokerConnections, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
-	}
-
-	/*
-	[Obsolete]
-	private async void UpdateBrokerConnections(object state)
-	{
-		using var scope = _scopeFactory.CreateScope();
-		var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-		var currentBrokers = dbContext.Brokers.ToList();
-
-		var brokersToRemove = new List<string>();
-
-		foreach (var existingClient in _mqttClients)
-		{
-			var broker = currentBrokers.FirstOrDefault(b => b.IPAddress == existingClient.Key);
-			if (broker == null || !existingClient.Value.IsConnected)
-			{
-				// Broker is no longer in the database or client is disconnected
-				brokersToRemove.Add(existingClient.Key);
-			}
-			else
-			{
-				// Update existing client if necessary
-				// (e.g., if the broker configuration has changed)
-			}
-		}
-
-		// Remove disconnected clients
-		foreach (var brokerAddress in brokersToRemove)
-		{
-			if (_mqttClients.TryRemove(brokerAddress, out var client))
-			{
-				await client.DisconnectAsync();
-			}
-		}
-
-		// Connect to new brokers
-		foreach (var broker in currentBrokers)
-		{
-			if (!_mqttClients.ContainsKey(broker.IPAddress))
-			{
-				await ConnectToBrokerAsync(broker);
-			}
-		}
-	}
-
-	[Obsolete]
-	private async Task ConnectToBrokerAsync(Broker broker)
-	{
-		var client = new MqttFactory().CreateMqttClient();
-		client.ApplicationMessageReceivedAsync += HandleReceivedApplicationMessageAsync;
-
-		var options = new MqttClientOptionsBuilder()
-			.WithTcpServer(broker.IPAddress, broker.Port)
-			.Build();
-
-		await client.ConnectAsync(options);
-		await client.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(receiveTopic).Build());
-
-		_mqttClients.TryAdd(broker.IPAddress, client);
-	}
-	*/
+	}	
 
 	[Obsolete]
 	public async Task StartAsync(CancellationToken cancellationToken)
@@ -100,7 +37,16 @@ public class MqttBackgroundService : IHostedService
 		var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 		var brokers = dbContext.Brokers.ToList();
 
-		foreach (var broker in brokers)
+		var connectionTasks = brokers.Select(broker => ConnectToBrokerAsync(broker, cancellationToken));
+		await Task.WhenAll(connectionTasks);
+
+		Console.WriteLine("All broker connection attempts finished.");
+	}
+
+	[Obsolete]
+	private async Task ConnectToBrokerAsync(Broker broker, CancellationToken cancellationToken)
+	{
+		try
 		{
 			var client = new MqttFactory().CreateMqttClient();
 			client.ApplicationMessageReceivedAsync += async e =>
@@ -116,6 +62,10 @@ public class MqttBackgroundService : IHostedService
 			await client.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(RECEIVE_TOPIC).Build(), cancellationToken: cancellationToken);
 
 			_mqttClients.TryAdd(broker.IPAddress, client);
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error connecting to broker {broker.IPAddress}: {ex.Message}");
 		}
 	}
 

@@ -275,12 +275,12 @@ namespace RemoteLight.Migrations
             migrationBuilder.InsertData(
                 table: "CardOwners",
                 columns: new[] { "Id", "CreatedAt", "Name" },
-                values: new object[] { 1, new DateTime(2024, 1, 23, 9, 29, 19, 660, DateTimeKind.Local).AddTicks(3106), "some user" });
+                values: new object[] { 1, new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9710), "some user" });
 
             migrationBuilder.InsertData(
                 table: "CardOwners",
                 columns: new[] { "Id", "CreatedAt", "Name" },
-                values: new object[] { 2, new DateTime(2024, 1, 23, 9, 29, 19, 660, DateTimeKind.Local).AddTicks(3150), "nice" });
+                values: new object[] { 2, new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9777), "nice" });
 
             migrationBuilder.InsertData(
                 table: "RFIDCards",
@@ -300,7 +300,7 @@ namespace RemoteLight.Migrations
             migrationBuilder.InsertData(
                 table: "Accesses",
                 columns: new[] { "Id", "FkRFIDCardId", "FkRoomId", "GivenAt" },
-                values: new object[] { 1, "687777954811", "raspberry1", new DateTime(2024, 1, 23, 9, 29, 19, 660, DateTimeKind.Local).AddTicks(3159) });
+                values: new object[] { 1, "687777954811", "raspberry1", new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9795) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accesses_FkRFIDCardId",

@@ -12,7 +12,7 @@ using RemoteLight.Data;
 namespace RemoteLight.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240123082919_Init")]
+    [Migration("20240123163639_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -259,7 +259,7 @@ namespace RemoteLight.Migrations
                             Id = 1,
                             FkRFIDCardId = "687777954811",
                             FkRoomId = "raspberry1",
-                            GivenAt = new DateTime(2024, 1, 23, 9, 29, 19, 660, DateTimeKind.Local).AddTicks(3159)
+                            GivenAt = new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9795)
                         });
                 });
 
@@ -343,13 +343,13 @@ namespace RemoteLight.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 23, 9, 29, 19, 660, DateTimeKind.Local).AddTicks(3106),
+                            CreatedAt = new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9710),
                             Name = "some user"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 23, 9, 29, 19, 660, DateTimeKind.Local).AddTicks(3150),
+                            CreatedAt = new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9777),
                             Name = "nice"
                         });
                 });

@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("MyDb");
 
 //builder.Services.AddHostedService<MqttBackgroundService>();
+builder.Services.AddSingleton<MqttBackgroundService>();
+builder.Services.AddHostedService(provider => provider.GetService<MqttBackgroundService>());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -68,7 +70,7 @@ ServicePointManager
 	.ServerCertificateValidationCallback +=
 	(sender, cert, chain, sslPolicyErrors) => true;
 
-void ApplyMigrations(IApplicationBuilder app)
+static void ApplyMigrations(IApplicationBuilder app)
 {
 	using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
 	using var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
