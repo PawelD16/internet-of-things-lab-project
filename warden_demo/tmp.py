@@ -1,24 +1,16 @@
+from glob import glob
 import paho.mqtt.client as mqtt
 import keyboard
 import threading
-from encryption_utils import decode_pub_key, encode_message
-from utilities import is_room_number_valid
+from encryption_utils_lab import decode_pub_key, encode_message
+from utilities_lab import is_room_number_valid
+from mfrc522 import MFRC522
 
 from config import *
 
 from buzzer import buzzer
 
-from menu import init_menu, menu, display_brightness
-
-broker_address = "10.108.33.122"
-
-client = mqtt.Client()
-
-authorized = False
-can_read = True
-answer = ""
-
-current_room = 0
+from menu import init_menu, menu, display_brightness, reset
 
 encoder_topic = "messages/encoder"
 keys_requests_topic = "messages/key/requests"
@@ -26,16 +18,79 @@ keys_answers_topic = "messages/key/answers"
 brightness_status_topic = "messages/brightness"
 
 server_command_topic = "server/command"
-server_result_topic = "server/result"
+server_rooms_result_topic = "server/result"
+
+broker_address = "10.108.33.122"
+def subscribe():
+    client.subscribe(keys_answers_topic)
+    client.subscribe(brightness_status_topic)
+    client.subscribe(server_rooms_result_topic)
+client = mqtt.Client()
+client.connect(broker_address, keepalive=0, port=1883)
+subscribe()
+
+def on_message_received(c, userdata, msg):
+    global answer
+    topic = msg.topic
+    print(msg.payload.decode())
+    if topic == keys_answers_topic and msg.payload.decode() != "":
+        setup_current_public_key(msg)
+    elif topic == brightness_status_topic:
+        brightness = msg.payload.decode()
+        handle_brightness_data(brightness)
+    elif topic == server_rooms_result_topic:
+        answer = msg.payload.decode()
+        print(f"Response from server: {answer}")
+
+client.on_message = on_message_received
+
+can_read = True
+authorized = False
+
+current_room = 0
+
 
 current_pub_key = ""
 
+
+answer = ""
 allOptions = [1, 4, 7, 9]
 
 encoderLeftPrevoiusState = GPIO.input(encoderLeft)
 encoderRightPrevoiusState = GPIO.input(encoderRight)
 
 disp = None
+
+def logout():
+    global answer
+    global can_read
+    global authorized
+    answer = ""
+    can_read = True
+    authorized = False
+    unauthorized_ui()
+
+
+def disable_buzzer():
+    global can_read
+    can_read = True
+    buzzer(0)
+
+
+def check_for_rooms_answer():
+    global can_read
+    global authorized
+    if answer != "":
+        can_read = False
+        authorized = True
+        print(answer)
+        # parse to rooms
+        # display_available_rooms()
+    else:
+        buzzer(1)
+        timeout_thread = threading.Timer(0.2, lambda: disable_buzzer())
+        timeout_thread.start()
+        authorized = False
 
 
 
@@ -48,6 +103,10 @@ def unauthorized_ui():
     global authorized
     global can_read
     while not authorized:
+    # dopoki unauthorized -> czytaj karte
+    # on authorization -> send_command_to_server(f"rooms:{uid}")
+    # wait for response, convert to list.
+    # if list is empty -> buzzer! else authorized_ui(list)
         MIFAREReader = MFRC522()
         (status, TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
         if status == MIFAREReader.MI_OK and can_read:
@@ -64,50 +123,38 @@ def unauthorized_ui():
 
         else:
             authorized = False
-    display_available_rooms()
+            pass
 
 
-def check_for_rooms_answer():
-    global can_read
-    global authorized
-    global answer
-    if answer != "":
-        can_read = False
-        authorized = True
-        print(answer)
-        # parse to rooms
-        display_available_rooms()
-    else:
-        buzzer(1)
-        timeout_thread = threading.Timer(0.2, lambda: disable_buzzer())
-        timeout_thread.start()
-        authorized = False
+def quick_buzzer():
+    #threadami
+    pass
 
-
-def disable_buzzer():
-    global can_read
-    can_read = True
-    buzzer(0)
+def authorized_ui(rooms):
+    pass
 
 
 def management_ui():
     print(f"Managing room {current_room}")
+    pass
+
+
+def ask_for_rooms():
+    pass
 
 
 def handle_brightness_data(brightness):
     display_brightness(disp, brightness)
+    pass
 
 
 def discard_room(e):
     global current_pub_key
     global current_room
-    if authorized:
-        if current_pub_key != "":
-            print(f"Exiting room {current_room}")
-            current_room = 0
-            display_available_rooms()
-        else:
-            logout()
+    if current_pub_key != "":
+        print(f"Exiting room {current_room}")
+        current_room = 0
+        display_available_rooms()
 
 
 def setup_current_public_key(msg):
@@ -117,17 +164,6 @@ def setup_current_public_key(msg):
     current_pub_key = key
 
 
-def on_message_received(c, userdata, msg):
-    topic = msg.topic
-    global allOptions
-    if topic == keys_answers_topic and msg.payload.decode() != "":
-        setup_current_public_key(msg)
-    elif topic == brightness_status_topic:
-        brightness = msg.payload.decode()
-        handle_brightness_data(brightness)
-    elif topic == server_result_topic:
-        print(f"Response from server: {msg.payload.decode()}")
-        allOptions = parse_rooms_answer(msg.payload.decode())
 
 
 def rotation_decode(e):
@@ -174,12 +210,15 @@ def rotation_decode(e):
     encoderRightPrevoiusState = encoderRightCurrentState
 
 
+
 def check_for_key_answer():
     if current_pub_key != "":
         management_ui()
     else:
         print("Room unavailable")
+        # tutaj buzzer
         # choose_room()
+
 
 
 def display_available_rooms():
@@ -210,51 +249,19 @@ def bind_controllers():
     GPIO.add_event_detect(buttonGreen, GPIO.FALLING, callback=choose_room, bouncetime=200)
 
 
-def subscribe():
-    client.subscribe(keys_answers_topic)
-    client.subscribe(brightness_status_topic)
-    client.subscribe(server_result_topic)
-
 
 def setup_broker():
-    client.connect(broker_address, keepalive=0)
-
-    subscribe()
-
-    client.on_message = on_message_received
-
-    bind_controllers()
-
-    client.loop_forever()
-
-
-def parse_rooms_answer(answer):
-    split = answer.split(',')
-    temp = []
-    for item in split:
-        temp.append(int(item))
-    return temp
-
-
-def setup_disp():
     global disp
     disp = init_menu()
 
-
-def logout():
-    global answer
-    global can_read
-    global authorized
-    answer = ""
-    can_read = True
-    authorized = False
-    unauthorized_ui()
+    bind_controllers()
+    reset(disp)
+    # display_available_rooms()
+    client.loop_forever()
 
 
 if __name__ == "__main__":
-    setup_disp()
-    setup_broker()
     unauthorized_ui()
-
+    setup_broker()
 
 
