@@ -6,6 +6,7 @@ using MQTTnet;
 using MQTTnet.Client;
 using System.Collections.Concurrent;
 using System.Collections.Specialized;
+using System.Composition;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,9 +37,11 @@ public class MqttBackgroundService : IHostedService
 		using var scope = _scopeFactory.CreateScope();
 		var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 		var brokers = dbContext.Brokers.ToList();
-
-		var connectionTasks = brokers.Select(broker => ConnectToBrokerAsync(broker, cancellationToken));
-		await Task.WhenAll(connectionTasks);
+		foreach (var broker in brokers)
+		{
+			await ConnectToBrokerAsync(broker, cancellationToken);
+		}
+		//await Task.WhenAll(connectionTasks);
 
 		Console.WriteLine("All broker connection attempts finished.");
 	}
@@ -55,8 +58,10 @@ public class MqttBackgroundService : IHostedService
 			};
 
 			var options = new MqttClientOptionsBuilder()
+			   .WithClientId(Guid.NewGuid().ToString())
 				.WithTcpServer(broker.IPAddress, broker.Port)
-				.Build();
+			   .WithCleanSession()
+			   .Build();
 
 			await client.ConnectAsync(options, cancellationToken);
 			await client.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(RECEIVE_TOPIC).Build(), cancellationToken: cancellationToken);

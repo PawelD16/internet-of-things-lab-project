@@ -26,8 +26,8 @@ namespace RemoteLight.Controllers
         // GET: AccessLogs
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.AccessLogs.Include(a => a.RFIDCard);
-            return View(await applicationDbContext.ToListAsync());
+            //var applicationDbContext = _context.AccessLogs.Include(a => a.RFIDCard);
+            return View(await _context.AccessLogs.ToListAsync());
         }
 
         // GET: AccessLogs/Details/5
@@ -39,7 +39,7 @@ namespace RemoteLight.Controllers
             }
 
             var accessLog = await _context.AccessLogs
-                .Include(a => a.RFIDCard)
+                //.Include(a => a.RFIDCard)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (accessLog == null)
             {
@@ -58,8 +58,9 @@ namespace RemoteLight.Controllers
                 return NotFound();
             }
 
+
             var accessLog = await _context.AccessLogs
-                .Include(a => a.RFIDCard)
+               // .Include(a => a.RFIDCard)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (accessLog == null)
             {

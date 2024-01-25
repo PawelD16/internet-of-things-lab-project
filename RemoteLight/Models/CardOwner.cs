@@ -17,5 +17,10 @@ namespace RemoteLight.Models
 
         [ValidateNever]
         public virtual RFIDCard RFIDCard { get; set; }
+
+        public override string ToString()
+        {
+            return $"Id: {Id}, CreatedAt: {CreatedAt}, Name: {Name}";
+        }
     }
 }

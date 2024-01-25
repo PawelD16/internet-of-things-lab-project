@@ -114,7 +114,6 @@ namespace RemoteLight.MQTTServices
                     accessLog = new()
                     {
                         FkRFIDCardId = RFIDCardId,
-
                         Data = $"Card with id {RFIDCardId} was not found in the database",
                     };
                 }
@@ -122,21 +121,19 @@ namespace RemoteLight.MQTTServices
                 {
                     var accessesRoomIds = _context.Accesses.Where(a => a.FkRFIDCardId == RFIDCardId).Select(a => a.FkRoomId).ToList();
                     var result = string.Join(",", accessesRoomIds);
-                    var cardOwner = _context.RFIDCards.SingleAsync(c => c.Id == RFIDCardId).Result;
-
+                    var cardOwner = _context.CardOwners.Include(c => c.RFIDCard).SingleAsync(c => c.RFIDCard.Id == RFIDCardId).Result;
+                    
                     accessLog = new()
                     {
                         FkRFIDCardId = RFIDCardId,
-                        Data = $"RFID Card used, result: {result}{(cardOwner != null ? ", card belongs to: " + cardOwner : "")}",
+                        Data = $"RFID Card used, result: {result}{(cardOwner != null ? ", card belongs to: " + cardOwner.ToString() : "")}",
                     };
-                    _context.Add(accessLog);
                     Console.WriteLine(result);
                     await SendMessage("server/result", result);
                 }
 
-                // _context.Add(accessLog);
-                // _context.SaveChanges();
-
+                 _context.Add(accessLog);
+                _context.SaveChanges();
             }
         }
 

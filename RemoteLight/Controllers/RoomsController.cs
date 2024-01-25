@@ -32,7 +32,7 @@ namespace RemoteLight.Controllers
         }
 
         // GET: Rooms/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Rooms == null)
             {
@@ -62,7 +62,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,AdditionalInformation,FkIdBroker")] Room room)
+        public async Task<IActionResult> Create([Bind("Id,AdditionalInformation,FkBrokerId")] Room room)
         {
             if (ModelState.IsValid)
             {
@@ -82,8 +82,8 @@ namespace RemoteLight.Controllers
                     foreach (var error in entry.Errors)
                     {
                         string errorMessage = error.ErrorMessage;
-                        // Log the key and error message
-                        _logger.LogError($"Error in '{key}': {errorMessage}");
+						// Log the key and error message
+						_logger.LogError($"Error in '{key}': {errorMessage}");
                     }
                 }
             }
@@ -113,7 +113,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,AdditionalInformation,FkIdBroker")] Room room)
+        public async Task<IActionResult> Edit(int? id, [Bind("Id,AdditionalInformation,FkBrokerId")] Room room)
         {
             if (id != room.Id)
             {
@@ -145,7 +145,7 @@ namespace RemoteLight.Controllers
         }
 
         // GET: Rooms/Delete/5
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Rooms == null)
             {
@@ -182,7 +182,7 @@ namespace RemoteLight.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool RoomExists(string id)
+        private bool RoomExists(int id)
         {
           return (_context.Rooms?.Any(e => e.Id == id)).GetValueOrDefault();
         }

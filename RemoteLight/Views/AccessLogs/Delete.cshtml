@@ -25,11 +25,12 @@
             @Html.DisplayFor(model => model.Data)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RFIDCard)
+            @Html.DisplayNameFor(model => model.FkRFIDCardId)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RFIDCard.Id)
+            @Html.DisplayFor(model => model.FkRFIDCardId)
         </dd>
+        
     </dl>
     
     <form asp-action="Delete">

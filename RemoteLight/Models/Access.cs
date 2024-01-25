@@ -10,7 +10,7 @@ namespace RemoteLight.Models
 
         [Required]
         [Display(Name = "Room")]
-        public string FkRoomId { get; set; } = string.Empty;
+        public int FkRoomId { get; set; }
 
         [Required]
         [Display(Name = "RFID Card")]

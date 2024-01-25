@@ -65,7 +65,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FkRoomId,FkRFIDId")] Access access)
+        public async Task<IActionResult> Create([Bind("Id,FkRoomId,FkRFIDCardId")] Access access)
         {
             if (ModelState.IsValid)
             {
@@ -118,7 +118,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FkRoomId,FkRFIDId")] Access access)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FkRoomId,FkRFIDCardId")] Access access)
         {
             if (id != access.Id)
             {

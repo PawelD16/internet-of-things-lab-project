@@ -3,63 +3,63 @@ using RemoteLight.Models;
 
 namespace RemoteLight.Data
 {
-    public static class DataInitializer
-    {
-        public static void SeedDatabase(this ModelBuilder modelBuilder)
-        {
+	public static class DataInitializer
+	{
+		public static void SeedDatabase(this ModelBuilder modelBuilder)
+		{
 
-            CardOwner cardOwner = new()
-            {
-                Id = 1,
-                Name = "some user",
-            };
+			CardOwner cardOwner = new()
+			{
+				Id = 1,
+				Name = "some user",
+			};
 
-            CardOwner cardOwner2 = new()
-            {
-                Id = 2,
-                Name = "nice",
-            };
+			CardOwner cardOwner2 = new()
+			{
+				Id = 2,
+				Name = "nice",
+			};
 
-            RFIDCard card = new()
-            {
-                Id = "687777954811",
-                FkCardOwnerId = cardOwner.Id
-            };
+			RFIDCard card = new()
+			{
+				Id = "687777954811",
+				FkCardOwnerId = cardOwner.Id
+			};
 
-            RFIDCard card2 = new()
-            {
-                Id = "1022787718182",
-                FkCardOwnerId = cardOwner2.Id
-            };
+			RFIDCard card2 = new()
+			{
+				Id = "1022787718182",
+				FkCardOwnerId = cardOwner2.Id
+			};
 
-            Broker broker = new()
-            {
-                BrokerId = 1,
-                IPAddress = "10.108.33.122",
-                Port = 1883
-            };
+			Broker broker = new()
+			{
+				BrokerId = 1,
+				IPAddress = "10.108.33.121",
+				Port = 1883
+			};
 
-            Room room = new()
-            {
-                FkBrokerId = broker.BrokerId,
-                Id = "raspberry1",
-                AdditionalInformation = "Raspberry pi"
-            };
+			Room room = new()
+			{
+				Id = 1,
+				FkBrokerId = broker.BrokerId,
+				AdditionalInformation = "Raspberry pi"
+			};
 
-            Access access = new()
-            {
-                Id = 1,
-                FkRFIDCardId = card.Id,
-                FkRoomId = room.Id,
-            };
+			Access access = new()
+			{
+				Id = 1,
+				FkRFIDCardId = card.Id,
+				FkRoomId = room.Id,
+			};
 
 
-            modelBuilder.Entity<CardOwner>().HasData(cardOwner, cardOwner2);
-            modelBuilder.Entity<RFIDCard>().HasData(card, card2);
-            modelBuilder.Entity<Broker>().HasData(broker);
-            modelBuilder.Entity<Room>().HasData(room);
-            modelBuilder.Entity<Access>().HasData(access);
+			modelBuilder.Entity<CardOwner>().HasData(cardOwner, cardOwner2);
+			modelBuilder.Entity<RFIDCard>().HasData(card, card2);
+			modelBuilder.Entity<Broker>().HasData(broker);
+			modelBuilder.Entity<Room>().HasData(room);
+			modelBuilder.Entity<Access>().HasData(access);
 
-        }
-    }
+		}
+	}
 }

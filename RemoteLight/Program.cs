@@ -12,14 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("MyDb");
 
-//builder.Services.AddHostedService<MqttBackgroundService>();
-builder.Services.AddSingleton<MqttBackgroundService>();
-builder.Services.AddHostedService(provider => provider.GetService<MqttBackgroundService>());
+// builder.Services.AddHostedService<MqttBackgroundService>();
+// builder.Services.AddSingleton<MqttBackgroundService>();
+// builder.Services.AddHostedService(provider => provider.GetService<MqttBackgroundService>());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
-
-//MQTTInitializer mqttInit = new(connectionString);
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -28,6 +26,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+ApplyMigrations(app);
+
+MQTTInitializer mqttInit = new(connectionString);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -63,7 +65,6 @@ using (var scope = scopeFactory.CreateScope())
     MyIdentityDataInitializer.SeedData(userManager);
 }
 
-ApplyMigrations(app);
 app.Run();
 
 ServicePointManager

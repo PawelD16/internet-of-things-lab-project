@@ -14,8 +14,8 @@ namespace RemoteLight.Models
         [Display(Name = "Information")]
         public string Data { get; set; } = string.Empty;
 
-        public string FkRFIDCardId { get; set; }
-        [ValidateNever]
-        public virtual RFIDCard RFIDCard { get; set; }
-    }
+        public string FkRFIDCardId { get; set; } = string.Empty;
+		//[ValidateNever]
+		//public virtual RFIDCard RFIDCard { get; set; }
+	}
 }

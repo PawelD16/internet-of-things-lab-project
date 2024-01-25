@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System.Reflection.Emit;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RemoteLight.Models;
 
@@ -28,11 +29,13 @@ namespace RemoteLight.Data
                 .WithOne(u => u.CardOwner)
                 .HasForeignKey<RFIDCard>(rc => rc.FkCardOwnerId);
 
+            /*
             // RFIDCard to AccessLog relationship
             builder.Entity<RFIDCard>()
                 .HasMany(rf => rf.AccessLogs)
                 .WithOne(al => al.RFIDCard)
                 .HasForeignKey(al => al.FkRFIDCardId);
+            */
 
             // RFIDCard to Access relationship
             builder.Entity<RFIDCard>()
@@ -57,7 +60,12 @@ namespace RemoteLight.Data
                 .HasIndex(b => b.IPAddress)
                 .IsUnique(true);
 
-            builder.SeedDatabase();
+			// Access unique for given room and card
+			builder.Entity<Access>()
+				.HasIndex(a => new { a.FkRoomId, a.FkRFIDCardId })
+				.IsUnique();
+
+			builder.SeedDatabase();
         }
     }
 }

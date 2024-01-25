@@ -12,7 +12,7 @@ using RemoteLight.Data;
 namespace RemoteLight.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240123163639_Init")]
+    [Migration("20240125181541_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,9 +238,8 @@ namespace RemoteLight.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("FkRoomId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("FkRoomId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("GivenAt")
                         .HasColumnType("datetime2");
@@ -249,7 +248,8 @@ namespace RemoteLight.Migrations
 
                     b.HasIndex("FkRFIDCardId");
 
-                    b.HasIndex("FkRoomId");
+                    b.HasIndex("FkRoomId", "FkRFIDCardId")
+                        .IsUnique();
 
                     b.ToTable("Accesses");
 
@@ -258,8 +258,8 @@ namespace RemoteLight.Migrations
                         {
                             Id = 1,
                             FkRFIDCardId = "687777954811",
-                            FkRoomId = "raspberry1",
-                            GivenAt = new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9795)
+                            FkRoomId = 1,
+                            GivenAt = new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(2080)
                         });
                 });
 
@@ -280,11 +280,14 @@ namespace RemoteLight.Migrations
 
                     b.Property<string>("FkRFIDCardId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RFIDCardId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FkRFIDCardId");
+                    b.HasIndex("RFIDCardId");
 
                     b.ToTable("AccessLogs");
                 });
@@ -315,7 +318,7 @@ namespace RemoteLight.Migrations
                         new
                         {
                             BrokerId = 1,
-                            IPAddress = "10.108.33.122",
+                            IPAddress = "test.mosquitto.org",
                             Port = 1883
                         });
                 });
@@ -343,13 +346,13 @@ namespace RemoteLight.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9710),
+                            CreatedAt = new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(1799),
                             Name = "some user"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9777),
+                            CreatedAt = new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(2048),
                             Name = "nice"
                         });
                 });
@@ -384,8 +387,8 @@ namespace RemoteLight.Migrations
 
             modelBuilder.Entity("RemoteLight.Models.Room", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("AdditionalInformation")
                         .IsRequired()
@@ -403,7 +406,7 @@ namespace RemoteLight.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "raspberry1",
+                            Id = 1,
                             AdditionalInformation = "Raspberry pi",
                             FkBrokerId = 1
                         });
@@ -481,13 +484,9 @@ namespace RemoteLight.Migrations
 
             modelBuilder.Entity("RemoteLight.Models.AccessLog", b =>
                 {
-                    b.HasOne("RemoteLight.Models.RFIDCard", "RFIDCard")
+                    b.HasOne("RemoteLight.Models.RFIDCard", null)
                         .WithMany("AccessLogs")
-                        .HasForeignKey("FkRFIDCardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RFIDCard");
+                        .HasForeignKey("RFIDCardId");
                 });
 
             modelBuilder.Entity("RemoteLight.Models.RFIDCard", b =>

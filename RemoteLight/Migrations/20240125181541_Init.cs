@@ -186,7 +186,7 @@ namespace RemoteLight.Migrations
                 name: "Rooms",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false),
                     AdditionalInformation = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FkBrokerId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -226,7 +226,7 @@ namespace RemoteLight.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     GivenAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FkRoomId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FkRoomId = table.Column<int>(type: "int", nullable: false),
                     FkRFIDCardId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -254,33 +254,33 @@ namespace RemoteLight.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Data = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FkRFIDCardId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    FkRFIDCardId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RFIDCardId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AccessLogs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AccessLogs_RFIDCards_FkRFIDCardId",
-                        column: x => x.FkRFIDCardId,
+                        name: "FK_AccessLogs_RFIDCards_RFIDCardId",
+                        column: x => x.RFIDCardId,
                         principalTable: "RFIDCards",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.InsertData(
                 table: "Brokers",
                 columns: new[] { "BrokerId", "IPAddress", "Port" },
-                values: new object[] { 1, "10.108.33.122", 1883 });
+                values: new object[] { 1, "test.mosquitto.org", 1883 });
 
             migrationBuilder.InsertData(
                 table: "CardOwners",
                 columns: new[] { "Id", "CreatedAt", "Name" },
-                values: new object[] { 1, new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9710), "some user" });
+                values: new object[] { 1, new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(1799), "some user" });
 
             migrationBuilder.InsertData(
                 table: "CardOwners",
                 columns: new[] { "Id", "CreatedAt", "Name" },
-                values: new object[] { 2, new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9777), "nice" });
+                values: new object[] { 2, new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(2048), "nice" });
 
             migrationBuilder.InsertData(
                 table: "RFIDCards",
@@ -295,12 +295,12 @@ namespace RemoteLight.Migrations
             migrationBuilder.InsertData(
                 table: "Rooms",
                 columns: new[] { "Id", "AdditionalInformation", "FkBrokerId" },
-                values: new object[] { "raspberry1", "Raspberry pi", 1 });
+                values: new object[] { 1, "Raspberry pi", 1 });
 
             migrationBuilder.InsertData(
                 table: "Accesses",
                 columns: new[] { "Id", "FkRFIDCardId", "FkRoomId", "GivenAt" },
-                values: new object[] { 1, "687777954811", "raspberry1", new DateTime(2024, 1, 23, 17, 36, 39, 133, DateTimeKind.Local).AddTicks(9795) });
+                values: new object[] { 1, "687777954811", 1, new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(2080) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accesses_FkRFIDCardId",
@@ -308,14 +308,15 @@ namespace RemoteLight.Migrations
                 column: "FkRFIDCardId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Accesses_FkRoomId",
+                name: "IX_Accesses_FkRoomId_FkRFIDCardId",
                 table: "Accesses",
-                column: "FkRoomId");
+                columns: new[] { "FkRoomId", "FkRFIDCardId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_AccessLogs_FkRFIDCardId",
+                name: "IX_AccessLogs_RFIDCardId",
                 table: "AccessLogs",
-                column: "FkRFIDCardId");
+                column: "RFIDCardId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
