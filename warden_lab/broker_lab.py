@@ -51,6 +51,10 @@ def unauthorized_ui():
     pass
 
 
+def quick_buzzer():
+    #threadami
+    pass
+
 def authorized_ui(rooms):
     pass
 
@@ -146,6 +150,7 @@ def check_for_key_answer():
         management_ui()
     else:
         print("Room unavailable")
+        # tutaj buzzer
         # choose_room()
 
 
@@ -203,4 +208,5 @@ def setup_broker():
 if __name__ == "__main__":
     unauthorized_ui()
     setup_broker()
+
 
