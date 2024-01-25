@@ -21,8 +21,7 @@ keys_requests_topic = "messages/key/requests"
 keys_answers_topic = "messages/key/answers"
 brightness_status_topic = "messages/brightness"
 server_command_topic = "server/command"
-server_rooms_result_topic = "server/rooms/results2"
-server_auth_result_topic = "server/auth/results2"
+server_result_topic = "server/result"
 
 
 current_pub_key = ""
@@ -69,7 +68,7 @@ def discard_room(e):
 def send_room_request(e):
     # example "rooms:uid" -> List<Room>
     print("room request sent")
-    client.publish(server_command_topic, payload=str("rooms:1"))
+    client.publish(server_command_topic, payload=str("rooms:6877779548118"))
 
 def send_auth_request(e):
     print("auth request sent")
@@ -82,6 +81,14 @@ def setup_current_public_key(msg):
     current_pub_key = key
 
 
+def parse_rooms_answer(answer):
+    split = answer.split(',')
+    temp = []
+    for item in split:
+        temp.append(int(item))
+    return temp
+
+
 def on_message_received(c, userdata, msg):
     topic = msg.topic
     if topic == keys_answers_topic and msg.payload.decode() != "":
@@ -89,10 +96,13 @@ def on_message_received(c, userdata, msg):
     elif topic == brightness_status_topic:
         brightness = msg.payload.decode()
         handle_brightness_data(brightness)
-    elif topic == server_rooms_result_topic:
-        print(f"Response from server (room): {msg.payload.decode()}")
-    elif topic == server_auth_result_topic:
-        print(f"Response from server (auth): {msg.payload.decode()}")
+    elif topic == server_result_topic:
+        print("Got response from server: ")
+        if len(msg.payload.decode()) == 0:
+            print("No rooms!")
+        else:
+            print("Got rooms! Answer:")
+            print(parse_rooms_answer(msg.payload.decode()))
 
 
 # def rotation_decode(d):
@@ -146,14 +156,12 @@ def bind_controllers():
     keyboard.on_press_key('q', publish_encoder_0)
     keyboard.on_press_key('x', discard_room)
     keyboard.on_press_key('r', send_room_request)
-    keyboard.on_press_key('a', send_auth_request)
 
 
 def subscribe():
     client.subscribe(keys_answers_topic)
     client.subscribe(brightness_status_topic)
-    client.subscribe(server_rooms_result_topic)
-    client.subscribe(server_auth_result_topic)
+    client.subscribe(server_result_topic)
 
 
 def setup_broker():
@@ -161,10 +169,10 @@ def setup_broker():
 
     subscribe()
 
-
     client.on_message = on_message_received
 
-    choose_room()
+    # choose_room()
+
 
     bind_controllers()
 
@@ -172,7 +180,5 @@ def setup_broker():
 
 
 if __name__ == "__main__":
-    while not authorized:
-        unauthorized_ui()
     setup_broker()
 
