@@ -1,8 +1,8 @@
 import paho.mqtt.client as mqtt
-import keyboard
 import threading
-from encryption_utils import decode_pub_key, encode_message
-from utilities import is_room_number_valid
+from encryption_utils_lab import decode_pub_key, encode_message
+from utilities_lab import is_room_number_valid
+from mfrc522 import MFRC522
 
 from config import *
 
@@ -10,7 +10,7 @@ from buzzer import buzzer
 
 from menu import init_menu, menu, display_brightness
 
-broker_address = "10.108.33.122"
+broker_address = "test.mosquitto.org"
 
 client = mqtt.Client()
 
@@ -19,6 +19,7 @@ can_read = True
 answer = ""
 
 current_room = 0
+updated_ui = False
 
 encoder_topic = "messages/encoder"
 keys_requests_topic = "messages/key/requests"
@@ -30,7 +31,7 @@ server_result_topic = "server/result"
 
 current_pub_key = ""
 
-allOptions = [1, 4, 7, 9]
+allOptions = []
 
 encoderLeftPrevoiusState = GPIO.input(encoderLeft)
 encoderRightPrevoiusState = GPIO.input(encoderRight)
@@ -59,11 +60,11 @@ def unauthorized_ui():
                 can_read = False
                 send_command_to_server(f"rooms:{num}")
                 print(num)
+                authorized = True
                 timeout_thread = threading.Timer(0.4, check_for_rooms_answer)
                 timeout_thread.start()
-
         else:
-            authorized = False
+            pass
     display_available_rooms()
 
 
@@ -119,6 +120,7 @@ def setup_current_public_key(msg):
 
 def on_message_received(c, userdata, msg):
     topic = msg.topic
+    global answer
     global allOptions
     if topic == keys_answers_topic and msg.payload.decode() != "":
         setup_current_public_key(msg)
@@ -127,16 +129,19 @@ def on_message_received(c, userdata, msg):
         handle_brightness_data(brightness)
     elif topic == server_result_topic:
         print(f"Response from server: {msg.payload.decode()}")
+        answer = msg.payload.decode()
         allOptions = parse_rooms_answer(msg.payload.decode())
 
 
 def rotation_decode(e):
+    global updated_ui
     encoderLeftCurrentState = GPIO.input(encoderLeft)
     encoderRightCurrentState = GPIO.input(encoderRight)
 
     global encoderLeftPrevoiusState
     global encoderRightPrevoiusState
     global allOptions
+    print(authorized)
 
     if (
         encoderLeftPrevoiusState == 1
@@ -149,7 +154,8 @@ def rotation_decode(e):
         if current_pub_key != "":
             encoded_message = encode_message(message, current_pub_key)
             client.publish(topic=encoder_topic, payload=encoded_message)
-        else:
+        if authorized:
+            updated_ui = False
             first = allOptions.pop(0)
             allOptions.append(first)
             menu(disp, allOptions)
@@ -165,7 +171,8 @@ def rotation_decode(e):
         if current_pub_key != "":
             encoded_message = encode_message(message, current_pub_key)
             client.publish(topic=encoder_topic, payload=encoded_message)
-        else:
+        if authorized:
+            updated_ui = False
             last = allOptions.pop()
             allOptions = [last] + allOptions
             menu(disp, allOptions)
@@ -179,13 +186,20 @@ def check_for_key_answer():
         management_ui()
     else:
         print("Room unavailable")
+        buzzer(1)
+        timeout_thread = threading.Timer(0.4, disable_buzzer)
+        timeout_thread.start()
         # choose_room()
 
 
 def display_available_rooms():
     global current_pub_key
+    global updated_ui
     current_pub_key = ""
     menu(disp, allOptions)
+    while authorized:
+        # sprytny mechanizm na wykrycie zmiany pokoju, ktory UWAGA! powoduje rysowanie na ekranie TYLKO RAZ.
+        pass
 
 
 def choose_room(e):
@@ -217,22 +231,25 @@ def subscribe():
 
 
 def setup_broker():
-    client.connect(broker_address, keepalive=0)
+    client.connect(broker_address, keepalive=0, port=1883)
 
     subscribe()
 
     client.on_message = on_message_received
 
     bind_controllers()
+    client.loop_start()
 
-    client.loop_forever()
 
+# def loop_f():
+#     client.loop_forever()
 
 def parse_rooms_answer(answer):
     split = answer.split(',')
     temp = []
     for item in split:
         temp.append(int(item))
+    print(temp)
     return temp
 
 
@@ -248,6 +265,7 @@ def logout():
     answer = ""
     can_read = True
     authorized = False
+    setup_disp()
     unauthorized_ui()
 
 
