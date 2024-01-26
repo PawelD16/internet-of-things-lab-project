@@ -263,11 +263,13 @@ def logout():
     global can_read
     global authorized
     global allOptions
+    global last_room_pointer
     answer = ""
     can_read = True
     authorized = False
     # nie ma co trzymac dostepnych pokoi poprzedniej osoby
     allOptions = []
+    last_room_pointer = -1
     setup_disp()
 
 
