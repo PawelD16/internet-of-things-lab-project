@@ -110,7 +110,7 @@ namespace RemoteLight.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BrokerId,IPAddress,Port")] Broker broker)
+        public async Task<IActionResult> Edit(int? id, [Bind("BrokerId,IPAddress,Port")] Broker broker)
         {
             if (id != broker.BrokerId)
             {
@@ -161,7 +161,7 @@ namespace RemoteLight.Controllers
         // POST: Brokers/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             if (_context.Brokers == null)
             {
@@ -177,7 +177,7 @@ namespace RemoteLight.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool BrokerExists(int id)
+        private bool BrokerExists(int? id)
         {
           return (_context.Brokers?.Any(e => e.BrokerId == id)).GetValueOrDefault();
         }

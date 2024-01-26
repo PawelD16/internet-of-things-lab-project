@@ -8,6 +8,10 @@ namespace RemoteLight.MQTTServices
     {
         readonly List<MQTTHandler> handlers = new();
         private readonly string _connectionString;
+
+        private readonly string RECEIVE_TOPIC = "server/commmand";
+        private readonly string RESPONSE_TOPIC = "server/result";
+
         public MQTTInitializer(string connectionString)
         {
             _connectionString = connectionString;
@@ -17,18 +21,18 @@ namespace RemoteLight.MQTTServices
 
             foreach (var broker in context.Brokers.ToList())
             {
-                handlers.Add(new MQTTHandler(connectionString, broker.IPAddress, broker.Port));
+                handlers.Add(new MQTTHandler(connectionString, broker.IPAddress, broker.Port, RECEIVE_TOPIC, RESPONSE_TOPIC));
             };
         }
 
         public void AddBroker(Broker broker)
         {
-            handlers.Add(new MQTTHandler(_connectionString, broker.IPAddress, broker.Port));
+            handlers.Add(new MQTTHandler(_connectionString, broker.IPAddress, broker.Port, RECEIVE_TOPIC, RESPONSE_TOPIC));
         }
 
         public void RemoveBroker(Broker broker)
         {
-            handlers.RemoveAll(h => h.ServerIp == broker.IPAddress);
+            handlers.RemoveAll(h => h.BrokerIP == broker.IPAddress);
         }
     }
 }

@@ -92,7 +92,7 @@ namespace RemoteLight.Controllers
         }
 
         // GET: Rooms/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Rooms == null)
             {
@@ -166,7 +166,7 @@ namespace RemoteLight.Controllers
         // POST: Rooms/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             if (_context.Rooms == null)
             {

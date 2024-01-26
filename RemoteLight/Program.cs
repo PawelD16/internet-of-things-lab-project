@@ -53,7 +53,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=AccessLogs}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();

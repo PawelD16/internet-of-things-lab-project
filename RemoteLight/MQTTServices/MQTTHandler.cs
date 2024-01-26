@@ -3,46 +3,36 @@ using MQTTnet;
 using MQTTnet.Client;
 using RemoteLight.Data;
 using RemoteLight.Models;
-using System.Threading.Channels;
 
 namespace RemoteLight.MQTTServices
 {
     public class MQTTHandler
     {
-        private readonly IMqttClient _mqttClient;
-        public string ServerIp { get; set; }
-        private readonly int _port;
-        private readonly string _conectionString;
-        private ApplicationDbContext _context;
+        private readonly IMqttClient mqttClient;
+        public string BrokerIP { get; }
+        private readonly int brokerPort;
+        private readonly string connectionString;
+        private ApplicationDbContext? _context;
 
-        public MQTTHandler(string conectionString, string server = "broker.hivemq.com", int port = 1883)
+        private readonly string recieveTopic;
+        private readonly string responseTopic;
+
+        public MQTTHandler(
+            string connectionString,
+            string brokerIP,
+            int brokerPort,
+            string recieveTopic,
+            string responseTopic)
         {
-            var factory = new MqttFactory();
-            _mqttClient = factory.CreateMqttClient();
-            _conectionString = conectionString;
+            this.connectionString = connectionString;
+            this.BrokerIP = brokerIP;
+            this.brokerPort = brokerPort;
+            this.recieveTopic = recieveTopic;
+            this.responseTopic = responseTopic;
 
-            _mqttClient.ApplicationMessageReceivedAsync += (e) =>
-            {
-                RecieveMessage(e);
-                return Task.CompletedTask;
-            };
+            mqttClient = new MqttFactory().CreateMqttClient();
 
-            _mqttClient.DisconnectedAsync += e =>
-            {
-                Console.WriteLine("### DISCONNECTED FROM SERVER ###");
-                return Task.CompletedTask;
-            };
-
-            _mqttClient.ConnectedAsync += e =>
-            {
-                Console.WriteLine("### CONNECTED TO SERVER ###");
-                return Task.CompletedTask;
-            };
-
-            ServerIp = server;
-            _port = port;
-            Connect().Wait();
-            Subscribe().Wait();
+            InitMqttClientConnection();
         }
 
         ~MQTTHandler()
@@ -50,117 +40,137 @@ namespace RemoteLight.MQTTServices
             Disconnect().Wait();
         }
 
+        private async void InitMqttClientConnection()
+        {
+            mqttClient.ApplicationMessageReceivedAsync += (e) =>
+            {
+                RecieveMessage(e);
+                return Task.CompletedTask;
+            };
+
+            try
+            {
+                await Connect();
+                await Subscribe();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error connecting to broker {this.BrokerIP} on port {this.brokerPort}: {ex.Message}");
+            }
+        }
+
         public async Task Connect()
         {
             var options = new MqttClientOptionsBuilder()
                 .WithClientId(Guid.NewGuid().ToString())
-                .WithTcpServer(ServerIp, _port)
+                .WithTcpServer(BrokerIP, brokerPort)
                 .WithCleanSession()
                 .Build();
 
-            await _mqttClient.ConnectAsync(options, CancellationToken.None);
+            await mqttClient.ConnectAsync(options, CancellationToken.None);
         }
 
         public async Task Disconnect()
         {
-            await _mqttClient.DisconnectAsync();
+            await mqttClient.DisconnectAsync();
         }
 
-        public async Task Subscribe(string topic = "server/command")
+        public async Task Subscribe()
         {
-            if (!_mqttClient.IsConnected)
-            {
+            if (!mqttClient.IsConnected)
                 await Connect();
-            }
+
             var topicFilter = new MqttTopicFilterBuilder()
-                .WithTopic(topic)
+                .WithTopic(recieveTopic)
                 .Build();
-            await _mqttClient.SubscribeAsync(topicFilter);
+            await mqttClient.SubscribeAsync(topicFilter);
         }
 
-        public async Task Unsubscribe(string topic = "server/command")
+        public async Task Unsubscribe(string topic)
         {
-            if (!_mqttClient.IsConnected)
-            {
+            if (!mqttClient.IsConnected)
                 await Connect();
-            }
-            await _mqttClient.UnsubscribeAsync(topic);
+
+            await mqttClient.UnsubscribeAsync(topic);
         }
 
         public async void RecieveMessage(MqttApplicationMessageReceivedEventArgs e)
         {
-            Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
-            Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
-            string payload = System.Text.Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-            Console.WriteLine($"+ Payload = {payload}");
-            Console.WriteLine($"+ QoS = {e.ApplicationMessage.QualityOfServiceLevel}");
-            Console.WriteLine($"+ Retain = {e.ApplicationMessage.Retain}");
-
-            DbContextOptionsBuilder<ApplicationDbContext> options = new();
-            options.UseSqlServer(_conectionString);
-            _context = new ApplicationDbContext(options.Options);
+            string payload = System.Text
+                .Encoding
+                .UTF8
+                .GetString(e.ApplicationMessage.PayloadSegment);
 
             if (payload.ToLower().StartsWith("rooms"))
-            {
-                string RFIDCardId = payload.Split(':')[1];
-                var RFIDCard = await _context.RFIDCards
-                    .Where(rfid => rfid.Id == RFIDCardId)
-                    .SingleOrDefaultAsync(m => m.Id == RFIDCardId);
-
-                AccessLog accessLog;
-                if (RFIDCard == null)
-                {
-                    Console.WriteLine("Card has not been found.");
-                    accessLog = new()
-                    {
-                        FkRFIDCardId = RFIDCardId,
-                        Data = $"Card with id {RFIDCardId} was not found in the database",
-                    };
-                }
-                else
-                {
-                    var accessesRoomIds = _context.Accesses.Where(a => a.FkRFIDCardId == RFIDCardId).Select(a => a.FkRoomId).ToList();
-                    var result = string.Join(",", accessesRoomIds);
-                    var cardOwner = _context.CardOwners.Include(c => c.RFIDCard).SingleAsync(c => c.RFIDCard.Id == RFIDCardId).Result;
-                    
-                    accessLog = new()
-                    {
-                        FkRFIDCardId = RFIDCardId,
-                        Data = $"RFID Card used, result: {result}{(cardOwner != null ? ", card belongs to: " + cardOwner.ToString() : "")}",
-                    };
-                    Console.WriteLine(result);
-                    await SendMessage("server/result", result);
-                }
-
-                 _context.Add(accessLog);
-                _context.SaveChanges();
-            }
+                await HandleRoomRequest(payload);
         }
 
-        public async Task SendMessage(string topic = "server/result", string payload = "message")
+        private async Task HandleRoomRequest(string payload)
+        {
+            DbContextOptionsBuilder<ApplicationDbContext> options = new();
+            options.UseSqlServer(connectionString);
+            _context = new ApplicationDbContext(options.Options);
+
+            string RFIDCardId = payload.Split(':')[1];
+            var RFIDCard = await _context.RFIDCards
+                .Where(rfid => rfid.Id == RFIDCardId)
+                .SingleOrDefaultAsync(m => m.Id == RFIDCardId);
+
+            AccessLog accessLog;
+            if (RFIDCard == null)
+            {
+                accessLog = new()
+                {
+                    FkRFIDCardId = RFIDCardId,
+                    Data = $"Card with id {RFIDCardId} was not found in the database",
+                };
+            }
+            else
+            {
+                var accessesRoomIds = _context.Accesses
+                    .Where(a => a.FkRFIDCardId == RFIDCardId)
+                    .Select(a => a.FkRoomId)
+                    .ToList();
+
+                var result = string.Join(",", accessesRoomIds);
+
+                var cardOwner = _context.CardOwners
+                    .Include(c => c.RFIDCard)
+                    .SingleAsync(c => c.RFIDCard.Id == RFIDCardId)
+                    .Result;
+
+                accessLog = new()
+                {
+                    FkRFIDCardId = RFIDCardId,
+                    Data = $"RFID Card used, result: {result}{(cardOwner != null ? ", card belongs to: " + cardOwner.ToString() : "")}",
+                };
+
+                await SendMessage(result);
+            }
+
+            _context.Add(accessLog);
+            _context.SaveChanges();
+        }
+
+        public async Task SendMessage(string payload)
         {
             var message = new MqttApplicationMessageBuilder()
-                .WithTopic(topic)
+                .WithTopic(responseTopic)
                 .WithPayload(payload)
                 .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
                 .Build();
 
-            if (_mqttClient.IsConnected)
-            {
-                try
-                {
-                    await _mqttClient.PublishAsync(message);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error occured during sending message: {ex.Message}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Client is not connected");
-            }
+            if (!mqttClient.IsConnected)
+                return;
 
+            try
+            {
+                await mqttClient.PublishAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error occured during sending message: {ex.Message}");
+            }
         }
     }
 }
