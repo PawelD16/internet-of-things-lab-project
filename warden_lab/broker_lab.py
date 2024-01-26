@@ -8,7 +8,7 @@ from config import *
 
 from buzzer import buzzer
 
-from menu import init_menu, menu, display_brightness
+from menu import init_menu, menu, display_brightness, unauthorized_ui
 
 broker_address = "10.108.33.121"
 
@@ -20,9 +20,9 @@ answer = ""
 
 current_room = 0
 
-# pokoj jest liczba dodatnia, tak wiec -1 oznacza stan domyslny
 last_room_pointer = -1
-
+last_brightness = -1
+brightness = 0
 encoder_topic = "messages/encoder"
 keys_requests_topic = "messages/key/requests"
 keys_answers_topic = "messages/key/answers"
@@ -47,7 +47,7 @@ def send_command_to_server(command):
     client.publish(server_command_topic, payload=str(command))
 
 
-def unauthorized_ui():
+def listen_for_rfid():
     global authorized
     global can_read
     MIFAREReader = MFRC522()
@@ -75,10 +75,6 @@ def check_for_rooms_answer():
     if answer != "":
         can_read = False
         authorized = True
-        print(answer)
-        # parse to rooms
-        # deleguje zarzadzanie pokojami do petli while
-        # display_available_rooms()
     else:
         buzzer(1)
         timeout_thread = threading.Timer(0.2, lambda: disable_buzzer())
@@ -92,26 +88,25 @@ def disable_buzzer():
     buzzer(0)
 
 
-def management_ui():
-    print(f"Managing room {current_room}")
-
-
-def handle_brightness_data(brightness):
-    display_brightness(disp, brightness)
+def handle_brightness_data():
+    global brightness
+    global last_brightness
+    if brightness != last_brightness:
+        display_brightness(disp, brightness)
+        last_brightness = brightness
 
 
 def discard_room(e):
     global current_pub_key
     global current_room
-    # global last_room_pointer ?
-    # znak zapytania, bo byc moze ten pointer zachowa sie dobrze, zobaczymy.
+    global last_room_pointer
+    global last_brightness
     if authorized:
         if current_pub_key != "":
-            print(f"Exiting room {current_room}")
             current_room = 0
-            # nie przechodze do zadnego ui - deleguje zarzadzanie do petli while
+            last_room_pointer = -1
+            last_brightness = -1
             current_pub_key = ""
-            # last_room_pointer = allOptions[0]  ?
         else:
             logout()
 
@@ -127,12 +122,11 @@ def on_message_received(c, userdata, msg):
     topic = msg.topic
     global answer
     global allOptions
+    global brightness
     if topic == keys_answers_topic and msg.payload.decode() != "":
         setup_current_public_key(msg)
     elif topic == brightness_status_topic:
         brightness = msg.payload.decode()
-        print(brightness)
-        handle_brightness_data(brightness)
     elif topic == server_result_topic:
         print(f"Response from server: {msg.payload.decode()}")
         answer = msg.payload.decode()
@@ -156,13 +150,10 @@ def rotation_decode(e):
         # prawo
         message = str(0)
         if current_pub_key != "":
-            print("prawo")
             encoded_message = encode_message(message, current_pub_key)
             client.publish(topic=encoder_topic, payload=encoded_message)
         if authorized:
-            first = allOptions.pop(0)
-            allOptions.append(first)
-            # menu(disp, allOptions)
+            allOptions = allOptions[1:] + [allOptions[0]]
 
     if (
         encoderRightPrevoiusState == 1
@@ -173,24 +164,17 @@ def rotation_decode(e):
         # lewo
         message = str(1)
         if current_pub_key != "":
-            print("lewo")
             encoded_message = encode_message(message, current_pub_key)
             client.publish(topic=encoder_topic, payload=encoded_message)
         if authorized:
-            last = allOptions.pop()
-            allOptions = [last] + allOptions
-            # menu(disp, allOptions)
+            allOptions = [allOptions[-1]] + allOptions[:-1]
 
     encoderLeftPrevoiusState = encoderLeftCurrentState
     encoderRightPrevoiusState = encoderRightCurrentState
 
 
 def check_for_key_answer():
-    if current_pub_key != "":
-        management_ui()
-        # tutaj jest wyswietlanie ui przez event przeslania wiadomosci od pokoju
-    else:
-        print("Room unavailable")
+    if current_pub_key == "":
         buzzer(1)
         timeout_thread = threading.Timer(0.4, disable_buzzer)
         timeout_thread.start()
@@ -199,16 +183,15 @@ def check_for_key_answer():
 def display_available_rooms():
     global current_pub_key
     global last_room_pointer
+    global allOptions
     if len(allOptions) > 0 and last_room_pointer != allOptions[0]:
         menu(disp, allOptions)
-        # blokada przed wielokrotnym rysowaniem na o-ledzie
         last_room_pointer = allOptions[0]
 
 
 def choose_room(e):
     global current_room
     if current_pub_key == "":
-        print(allOptions[0])
         current_room = int(allOptions[0])
     client.publish(topic=keys_requests_topic, payload=str(current_room))
     timeout_thread = threading.Timer(0.1, check_for_key_answer)
@@ -223,7 +206,7 @@ def bind_controllers():
     GPIO.add_event_detect(
         encoderLeft, GPIO.FALLING, callback=rotation_decode, bouncetime=20
     )
-    GPIO.add_event_detect(buttonRed, GPIO.FALLING, callback=discard_room, bouncetime=20)
+    GPIO.add_event_detect(buttonRed, GPIO.FALLING, callback=discard_room, bouncetime=200)
     GPIO.add_event_detect(buttonGreen, GPIO.FALLING, callback=choose_room, bouncetime=200)
 
 
@@ -251,13 +234,17 @@ def parse_rooms_answer(answer):
     for item in split:
         if item != '':
             temp.append(int(item))
-    print(temp)
     return temp
 
 
 def setup_disp():
     global disp
     disp = init_menu()
+
+
+def clean_disp():
+    global disp
+    disp.fill(0)
 
 
 def logout():
@@ -269,27 +256,18 @@ def logout():
     answer = ""
     can_read = True
     authorized = False
-    # nie ma co trzymac dostepnych pokoi poprzedniej osoby
-    allOptions = []
     last_room_pointer = -1
-    setup_disp()
+    timeout_thread = threading.Timer(0.4, lambda : unauthorized_ui(disp))
+    timeout_thread.start()
 
 
 if __name__ == "__main__":
     setup_disp()
     setup_broker()
     while True:
-        if not authorized: # Jesli uzytkownik nie przylozyl karty lub nie ma dostepu
-            unauthorized_ui()
-        elif authorized and current_pub_key == "": # Jesli uzytkownik ma dostep do zarzadzania, ale nie wybral pokoju
+        if not authorized:
+            listen_for_rfid()
+        elif authorized and current_pub_key == "":
             display_available_rooms()
-        elif authorized and current_pub_key != "": # uzytkownik wybral pokok
-            pass
-            # Tutaj to jest chyba zarzadzane eventami.
-            # Na kazda zmiane jasnosci pojawia sie klatka.
-            # Patrz linia 124 - 126
-            # Na każdą wiadomość od pokoju (jest to reakcja na rozkaz enkodera)
-            # Jest pokazywana klatka na ekranie, nie powinno być tu problemu z rozmazaniem
-
-
-
+        elif authorized and current_pub_key != "":
+            handle_brightness_data()
