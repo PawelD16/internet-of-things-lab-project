@@ -1,13 +1,13 @@
 import paho.mqtt.client as mqtt
-from utilities import is_room_number_valid
-from encryption_utils import get_public_key, decode_message
+from utilities_lab import is_room_number_valid
+from encryption_utils_lab import get_public_key, decode_message
 import board
 import neopixel
 
 
 pixels = None
 
-broker_address = "10.108.33.122"
+broker_address = "10.108.33.121"
 
 room_number = 0
 client = mqtt.Client()
@@ -53,6 +53,7 @@ def message_router(c, userdata, msg):
         # decode fail -> exception
         try:
             decoded = decode_message(mess)
+            print(decoded)
             parse_encoder_data(decoded)
         except Exception:
             print("decrypt fail")
