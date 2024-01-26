@@ -10,7 +10,7 @@ from buzzer import buzzer
 
 from menu import init_menu, menu, display_brightness
 
-broker_address = "test.mosquitto.org"
+broker_address = "10.108.33.121"
 
 client = mqtt.Client()
 
@@ -131,6 +131,7 @@ def on_message_received(c, userdata, msg):
         setup_current_public_key(msg)
     elif topic == brightness_status_topic:
         brightness = msg.payload.decode()
+        print(brightness)
         handle_brightness_data(brightness)
     elif topic == server_result_topic:
         print(f"Response from server: {msg.payload.decode()}")
@@ -145,7 +146,6 @@ def rotation_decode(e):
     global encoderLeftPrevoiusState
     global encoderRightPrevoiusState
     global allOptions
-    print(authorized)
 
     if (
         encoderLeftPrevoiusState == 1
@@ -156,12 +156,13 @@ def rotation_decode(e):
         # prawo
         message = str(0)
         if current_pub_key != "":
+            print("prawo")
             encoded_message = encode_message(message, current_pub_key)
             client.publish(topic=encoder_topic, payload=encoded_message)
         if authorized:
             first = allOptions.pop(0)
             allOptions.append(first)
-            menu(disp, allOptions)
+            # menu(disp, allOptions)
 
     if (
         encoderRightPrevoiusState == 1
@@ -172,12 +173,13 @@ def rotation_decode(e):
         # lewo
         message = str(1)
         if current_pub_key != "":
+            print("lewo")
             encoded_message = encode_message(message, current_pub_key)
             client.publish(topic=encoder_topic, payload=encoded_message)
         if authorized:
             last = allOptions.pop()
             allOptions = [last] + allOptions
-            menu(disp, allOptions)
+            # menu(disp, allOptions)
 
     encoderLeftPrevoiusState = encoderLeftCurrentState
     encoderRightPrevoiusState = encoderRightCurrentState
@@ -197,8 +199,7 @@ def check_for_key_answer():
 def display_available_rooms():
     global current_pub_key
     global last_room_pointer
-    current_pub_key = ""
-    if last_room_pointer != allOptions[0]:
+    if len(allOptions) > 0 and last_room_pointer != allOptions[0]:
         menu(disp, allOptions)
         # blokada przed wielokrotnym rysowaniem na o-ledzie
         last_room_pointer = allOptions[0]
@@ -248,7 +249,8 @@ def parse_rooms_answer(answer):
     split = answer.split(',')
     temp = []
     for item in split:
-        temp.append(int(item))
+        if item != '':
+            temp.append(int(item))
     print(temp)
     return temp
 
