@@ -25,7 +25,7 @@ namespace RemoteLight.MQTTServices
             string responseTopic)
         {
             this.connectionString = connectionString;
-            this.BrokerIP = brokerIP;
+            BrokerIP = brokerIP;
             this.brokerPort = brokerPort;
             this.recieveTopic = recieveTopic;
             this.responseTopic = responseTopic;
@@ -112,6 +112,10 @@ namespace RemoteLight.MQTTServices
             _context = new ApplicationDbContext(options.Options);
 
             string RFIDCardId = payload.Split(':')[1];
+
+            if (RFIDCardId == null)
+                return;
+
             var RFIDCard = await _context.RFIDCards
                 .Where(rfid => rfid.Id == RFIDCardId)
                 .SingleOrDefaultAsync(m => m.Id == RFIDCardId);
