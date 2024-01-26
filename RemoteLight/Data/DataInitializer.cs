@@ -35,7 +35,7 @@ namespace RemoteLight.Data
 			Broker broker = new()
 			{
 				BrokerId = 1,
-				IPAddress = "10.108.33.121",
+				IPAddress = "test.mosquitto.org",
 				Port = 1883
 			};
 

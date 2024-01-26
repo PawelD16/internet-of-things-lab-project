@@ -9,11 +9,11 @@ namespace RemoteLight.MQTTServices
     public class MQTTHandler
     {
         private readonly IMqttClient mqttClient;
+        private ApplicationDbContext? _context;
+
         public string BrokerIP { get; }
         private readonly int brokerPort;
         private readonly string connectionString;
-        private ApplicationDbContext? _context;
-
         private readonly string recieveTopic;
         private readonly string responseTopic;
 
@@ -40,7 +40,7 @@ namespace RemoteLight.MQTTServices
             Disconnect().Wait();
         }
 
-        private async void InitMqttClientConnection()
+        private void InitMqttClientConnection()
         {
             mqttClient.ApplicationMessageReceivedAsync += (e) =>
             {
@@ -50,12 +50,12 @@ namespace RemoteLight.MQTTServices
 
             try
             {
-                await Connect();
-                await Subscribe();
+                Connect().Wait();
+                Subscribe().Wait();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error connecting to broker {this.BrokerIP} on port {this.brokerPort}: {ex.Message}");
+                Console.WriteLine($"Error connecting to broker {BrokerIP} on port {brokerPort}: {ex.Message}");
             }
         }
 

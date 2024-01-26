@@ -20,12 +20,13 @@ namespace RemoteLight.Controllers
             _logger = logger;
         }
 
-        /*
+        
         public IActionResult Index()
         {
-            return View();
+            return Redirect("AccessLogs/Index");
         }
 
+        /*
         public IActionResult Privacy()
         {
             return View();

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace RemoteLight.Migrations
 {
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -275,12 +275,12 @@ namespace RemoteLight.Migrations
             migrationBuilder.InsertData(
                 table: "CardOwners",
                 columns: new[] { "Id", "CreatedAt", "Name" },
-                values: new object[] { 1, new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(1799), "some user" });
+                values: new object[] { 1, new DateTime(2024, 1, 26, 19, 37, 27, 194, DateTimeKind.Local).AddTicks(4934), "some user" });
 
             migrationBuilder.InsertData(
                 table: "CardOwners",
                 columns: new[] { "Id", "CreatedAt", "Name" },
-                values: new object[] { 2, new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(2048), "nice" });
+                values: new object[] { 2, new DateTime(2024, 1, 26, 19, 37, 27, 194, DateTimeKind.Local).AddTicks(4993), "nice" });
 
             migrationBuilder.InsertData(
                 table: "RFIDCards",
@@ -300,7 +300,7 @@ namespace RemoteLight.Migrations
             migrationBuilder.InsertData(
                 table: "Accesses",
                 columns: new[] { "Id", "FkRFIDCardId", "FkRoomId", "GivenAt" },
-                values: new object[] { 1, "687777954811", 1, new DateTime(2024, 1, 25, 19, 15, 41, 142, DateTimeKind.Local).AddTicks(2080) });
+                values: new object[] { 1, "687777954811", 1, new DateTime(2024, 1, 26, 19, 37, 27, 194, DateTimeKind.Local).AddTicks(5010) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accesses_FkRFIDCardId",

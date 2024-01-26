@@ -27,7 +27,10 @@ namespace RemoteLight.Controllers
         public async Task<IActionResult> Index()
         {
             //var applicationDbContext = _context.AccessLogs.Include(a => a.RFIDCard);
-            return View(await _context.AccessLogs.ToListAsync());
+            return View(await _context.AccessLogs
+                    .OrderByDescending(x => x.Id)
+                    .ToListAsync()
+                );
         }
 
         // GET: AccessLogs/Details/5
