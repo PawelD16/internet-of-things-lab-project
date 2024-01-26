@@ -8,6 +8,7 @@ from config import *
 rotated = True
 allOptions = []
 optionChoosen = False
+fontSmall = ImageFont.truetype('./lib/oled/Font.ttf', 13)
 
 def bind_controllers():
     GPIO.add_event_detect(encoderLeft, GPIO.FALLING, callback=rotation_decode, bouncetime=20)
@@ -18,13 +19,13 @@ def init_menu():
     disp = SSD1331.SSD1331()
     disp.Init()
     disp.clear()
+    unauthorized_ui(disp)
     return disp
 
 
 def menu(disp, options):
     image1 = Image.new("RGB", (disp.width, disp.height), "BLACK")
     draw = ImageDraw.Draw(image1)
-    fontSmall = ImageFont.truetype('./lib/oled/Font.ttf', 13)
 
     for option, index in zip(options, range(len(options))):
         if index == 0:
@@ -36,10 +37,17 @@ def menu(disp, options):
     disp.ShowImage(image1, 0, 0)
 
 
+def unauthorized_ui(disp):
+    image1 = Image.new("RGB", (disp.width, disp.height), "BLACK")
+    draw = ImageDraw.Draw(image1)
+    draw.text((5, 20), "Please, scan", font=fontSmall, fill="WHITE")
+    draw.text((14, 35), "your card", font=fontSmall, fill="WHITE")
+    disp.ShowImage(image1, 0, 0)
+
+
 def display_brightness(disp, brithness):
     image1 = Image.new("RGB", (disp.width, disp.height), "BLACK")
     draw = ImageDraw.Draw(image1)
-    fontSmall = ImageFont.truetype('./lib/oled/Font.ttf', 13)
     draw.text((5, 20), f'Brightness: {str(brithness)}', font=fontSmall, fill="WHITE")
 
     disp.ShowImage(image1, 0, 0)
