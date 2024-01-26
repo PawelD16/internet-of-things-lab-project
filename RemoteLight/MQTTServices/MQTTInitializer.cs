@@ -6,9 +6,12 @@ namespace RemoteLight.MQTTServices
 {
     public class MQTTInitializer
     {
-        readonly List<MQTTHandler> handlers = new();
+        private readonly List<MQTTHandler> handlers = new();
 
+        // temat, na którym serwer nasłuchuje zapytań
         private readonly string RECEIVE_TOPIC = "server/command";
+
+        // temat, na którym serwera odpowiada
         private readonly string RESPONSE_TOPIC = "server/result";
 
         public MQTTInitializer(string connectionString)
@@ -17,6 +20,7 @@ namespace RemoteLight.MQTTServices
             options.UseSqlServer(connectionString);
             ApplicationDbContext context = new(options.Options);
 
+            // Dla każdego skonfigurowanego brokera tworzona instancja klienta MQTT 
             foreach (var broker in context.Brokers.ToList())
             {
                 handlers.Add(new MQTTHandler(connectionString, broker.IPAddress, broker.Port, RECEIVE_TOPIC, RESPONSE_TOPIC));

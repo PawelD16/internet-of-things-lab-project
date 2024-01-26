@@ -19,19 +19,16 @@ public class MqttBackgroundService : IHostedService
 	private readonly string RECEIVE_TOPIC = "server/commmand";
 	private readonly string RESPONSE_TOPIC = "server/result";
 
-	[Obsolete]
 	public MqttBackgroundService(IServiceScopeFactory scopeFactory)
 	{
 		_scopeFactory = scopeFactory;
 	}	
 
-	[Obsolete]
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
 		await ConnectToBrokersAsync(cancellationToken);
 	}
 
-	[Obsolete]
 	private async Task ConnectToBrokersAsync(CancellationToken cancellationToken)
 	{
 		using var scope = _scopeFactory.CreateScope();
@@ -46,7 +43,6 @@ public class MqttBackgroundService : IHostedService
 		Console.WriteLine("All broker connection attempts finished.");
 	}
 
-	[Obsolete]
 	private async Task ConnectToBrokerAsync(Broker broker, CancellationToken cancellationToken)
 	{
 		try
@@ -84,11 +80,10 @@ public class MqttBackgroundService : IHostedService
 		}
 	}
 
-	[Obsolete]
 	private async Task HandleReceivedApplicationMessageAsync(MqttApplicationMessageReceivedEventArgs e, IMqttClient mqttClient)
 	{
 		var topic = e.ApplicationMessage.Topic;
-		var payload = e.ApplicationMessage.Payload;
+		var payload = e.ApplicationMessage.PayloadSegment;
 		var convertedPayload = Encoding.UTF8.GetString(payload);
 
 		Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
