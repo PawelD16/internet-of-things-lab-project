@@ -53,7 +53,6 @@ def message_router(c, userdata, msg):
         # decode fail -> exception
         try:
             decoded = decode_message(mess)
-            print(decoded)
             parse_encoder_data(decoded)
         except Exception:
             print("decrypt fail")
